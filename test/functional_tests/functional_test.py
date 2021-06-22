@@ -1,46 +1,48 @@
+import pathlib
 import sys
 import unittest
 from unittest.mock import patch, call
 
-from main import Application
+from test.base.classes import (IntegratedTestCase, 
+        patch_sys_argv, patch_config_path)
 
 
-class FirstLaunchTest(unittest.TestCase):
-    """Open jopen for the first time"""
-    def setUp(self):
-        self.app = Application()
+class FirstLaunchTest(IntegratedTestCase):
+    files_to_create = ('template', 'config')
 
-    def tearDown(self):
-        pass
-
+    @patch_config_path()
+    @patch_sys_argv(('main.py',))
     def test_launch_without_sys_args_with_default_settings_creates_new_note(
                 self
                 ):
         # Script is being executed
         # It finds that there is only script pathname in sysargv
         # There is only script pathname in system arguments
-        sys.argv = ['script_path']
-        self.assertEquals(len(sys.argv), 1)
-        self.assertEquals(sys.argv[0], 'script_path')
-
         # Because of that Script chooses default default behaviour mode
-        self.assertEquals(self.app.get_mode(), 'DEFAULT')
+        self.assertEqual(self.app.get_mode(), 'DEFAULT')
 
-        # Secondly it checks if configuration init file exist 
-        # and reads it
+        # Secondly it checks if configuration file exist and reads it
+        self.assertTrue(self.files['config'].path.is_file())
+        # settings = self.app.read_config_file(path=self.files['config'])
         settings = self.app.read_config_file()
 
         # There are default settings values for:
         #   * destination path
         #   * template path
         #   * filenames' date format
-        default_settings = ('', '', '')  # patch this
-        destination_path, template_path, date_formay = default_settings
+        default_settings = self.files['config'].data
 
-        self.assertIn(default_settings, settings)
+        default_settings = {
+                'destination': sys.argv[0].parent.joinpath('test'),
+                'template': self.files['template'].path,
+                'date format': '%Y-%M-%D',
+            }
+        for setting, expected_value in default_settings.items():
+            self.assertIn(setting, settings.keys())
+            self.assertEqual(expected_value, settings[setting])
 
-        # It checks are default settings valid and finds that:
-        #   * destination path file is alredy exist 
+        # It checks that default settings are valid and finds that:
+        #   * destination file does not exist yet
         #   * destination path is writable
 
         #   * template path file is exist and readable
