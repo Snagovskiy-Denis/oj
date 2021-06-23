@@ -33,28 +33,37 @@ class ConfiguratorTest(FilesMixIn, BaseTestCase):
         pass
 
 
+@patch('configparser.ConfigParser.sections', return_value=['foo'])
+@patch_is_file(return_value=True)
 class ConfiguratorErrorsTest(BaseTestCase):
-    @patch_is_file(False)
-    def test_raises_error_if_config_not_found(self, mock_is_file):
+    def test_raises_error_if_config_not_found(
+                self, mock_is_file, mock_sections
+            ):
+        mock_is_file.return_value = False
+
         with self.assertRaises(FileNotFoundError):
             self.app.read_config_file()
-        mock_is_file.assert_called_once()
 
-    @patch_is_file(True)
+        mock_is_file.assert_called_once()
+        mock_sections.assert_not_called()
+
     @patch('configparser.ConfigParser.read', return_value='')
-    def test_raises_error_if_config_is_empty(self, mock_read, mock_is_file):
+    def test_raises_error_if_config_is_empty(
+                self, mock_read, mock_is_file, mock_sections
+            ):
+        mock_sections.return_value = []
+
         with self.assertRaises(ValueError):
             self.app.read_config_file()
 
         expected_path = str(build_path((FIXTURE_CONFIG,)))
 
-        mock_is_file.assert_called_once()
+        for mock in mock_is_file, mock_sections:
+            mock.assert_called_once()
         mock_read.assert_called_once_with(expected_path)
 
-    @patch_is_file(True)
-    @patch('configparser.ConfigParser.sections', return_value=['foo'])
     def test_raises_error_if_can_not_find_section_in_config(
-                self, mock_sections, mock_is_file
+                self, mock_is_file, mock_sections
             ):
         with self.assertRaises(SectionReadError):
             self.app.read_config_file()
@@ -63,19 +72,17 @@ class ConfiguratorErrorsTest(BaseTestCase):
             mock.assert_called_once()
 
     @patch('configparser.ConfigParser.has_section', return_value=True)
-    @patch_is_file(True)
-    @patch('configparser.ConfigParser.sections', return_value=['foo'])
     def test_raises_error_if_can_not_find_setting_in_section(
-                self, mock_sections, mock_is_file, mock_has_section
+                self, mock_has_section, mock_is_file, mock_sections
             ):
         with self.assertRaises(SettingReadError):
             self.app.read_config_file()
 
         sections = mock_sections.return_value
 
+        mock_has_section.assert_called_once_with(sections[0])
         for mock in mock_is_file, mock_sections:
             mock.assert_called_once()
-        mock_has_section.assert_called_once_with(sections[0])
 
 
 if __name__ == '__main__':
