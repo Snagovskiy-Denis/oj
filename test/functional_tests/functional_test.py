@@ -1,10 +1,10 @@
 import pathlib
 import sys
 import unittest
-from unittest.mock import patch, call
+from unittest.mock import patch
 
-from test.base.classes import (IntegratedTestCase, 
-        patch_sys_argv, patch_config_path)
+from test.base.classes import IntegratedTestCase 
+from test.base.pathcers import patch_sys_argv, patch_config_path
 
 
 class FirstLaunchTest(IntegratedTestCase):
@@ -13,7 +13,7 @@ class FirstLaunchTest(IntegratedTestCase):
     @patch_config_path()
     @patch_sys_argv(('main.py',))
     def test_launch_without_sys_args_with_default_settings_creates_new_note(
-                self
+                self, mock_config_path
                 ):
         # Script is being executed
         # It finds that there is only script pathname in sysargv

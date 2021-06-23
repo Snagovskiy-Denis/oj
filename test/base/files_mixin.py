@@ -1,10 +1,12 @@
-import pathlib
+from pathlib import Path
+
+from constants import ALL_FILES
 
 
 class SelfCleanedFile:
     'Create and delete file on path with given data'
 
-    def __init__(self, path:pathlib.Path, data:str=''):
+    def __init__(self, path:Path, data:str=''):
         self._path = path
         self._data = data
         with open(path, 'w') as f:
@@ -26,8 +28,6 @@ class SelfCleanedFile:
 
 
 class SelfCleanedFileFactory:
-    ALL_FILES = ('template', 'config', 'destination')
-
     def __init__(self, desired_files: tuple[str]):
         self.desired_files = desired_files
 
@@ -41,10 +41,10 @@ class SelfCleanedFileFactory:
             files[file] = SelfCleanedFile(**_data)
         return files
     
-    def generate_filepaths(self) -> dict[str: 'filename', pathlib.Path]:
-        base_path = pathlib.Path().absolute()
+    def generate_filepaths(self) -> dict[str: 'filename', Path]:
+        base_path = Path().absolute()  # TODO implement build_path()
         path = base_path.joinpath('test')
-        return {file: path.joinpath(f'_{file}.md') for file in self.ALL_FILES}
+        return {file: path.joinpath(f'_{file}.md') for file in ALL_FILES}
 
     def generate_files_data(self) -> dict[str: 'filename', str: 'data']:
         paths = self.generate_filepaths()

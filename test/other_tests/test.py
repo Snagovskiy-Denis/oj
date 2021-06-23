@@ -1,17 +1,15 @@
+from configparser import ConfigParser
 import pathlib
 import sys
 import unittest
 from unittest import skip
 from unittest.mock import patch
-from configparser import ConfigParser
 
-from test.base.classes import (FilesMixIn, BaseTestCase,
-                               patch_sys_argv, patch_config_path, build_path, 
-    )
-from main import SectionReadError, SettingReadError
+from constants import DEFAULT
+from test.base.classes import FilesMixIn, BaseTestCase
+from test.base.pathcers import patch_sys_argv, patch_config_path, build_path
+from exceptions import SectionReadError, SettingReadError
 
-
-DEFAULT = 'DEFAULT'
 
 def get_corrupted_config_file():
     config = ConfigParser()
@@ -49,7 +47,7 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
 class ConfiguratorTest(FilesMixIn, BaseTestCase):
     files_to_create = ('template', 'config')
 
-    def test_searches_config_file_in_dunder_file_directory_path(self):
+    def test_searches_config_file_in_dunder_file_directory_path(self, _):
         expected_settings: 'destination, date format, template' = [
                 build_path(['test']),
                 '%Y-%M-%D',
@@ -67,8 +65,8 @@ class ConfiguratorTest(FilesMixIn, BaseTestCase):
 
 
 class ConfiguratorErrorsTest(BaseTestCase):
-    @patch_config_path(('non_existing_config.py',))
-    def test_raises_error_if_config_not_found(self):
+    @patch('pathlib.Path.is_file', return_value=False)
+    def test_raises_error_if_config_not_found(self, mock_config_filename):
         with self.assertRaises(FileNotFoundError):
             self.app.read_config_file()
 
@@ -87,7 +85,7 @@ class ConfiguratorErrorsTest(BaseTestCase):
     @patch('configparser.ConfigParser.has_section', return_value=True)
     @patch('pathlib.Path.is_file', return_value=True)
     @patch('configparser.ConfigParser.sections', return_value=['foo', 'bar'])
-    def test_raises_error_if_can_not_find_setting_in_section(self, _, __, ___):
+    def test_raises_error_if_can_not_find_setting_in_section(self, _, _2, _3):
         with self.assertRaises(SettingReadError):
             self.app.read_config_file()
 
