@@ -23,15 +23,15 @@ class FirstLaunchTest(IntegratedTestCase):
 
         # Secondly it checks if configuration file exist and reads it
         self.assertTrue(self.files['config'].path.is_file())
-        # settings = self.app.read_config_file(path=self.files['config'])
-        settings = self.app.read_config_file()
+        self.assertEqual(len(self.app.configurations), 0)
+
+        self.app.read_config_file()
+        settings = self.app.configurations
 
         # There are default settings values for:
         #   * destination path
         #   * template path
         #   * filenames' date format
-        default_settings = self.files['config'].data
-
         default_settings = {
                 'destination': sys.argv[0].parent.joinpath('test'),
                 'template': self.files['template'].path,

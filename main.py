@@ -8,10 +8,11 @@ class Application:
 
     def __init__(self):
         self.path = Path().absolute()
+        self.configurations = dict()
 
     def get_mode(self):
         return self.DEFAULT
 
     def read_config_file(self):
-        return Configurator().read_config()
+        self.configurations = Configurator().read_config()
 

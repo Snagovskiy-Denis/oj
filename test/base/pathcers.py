@@ -22,3 +22,7 @@ def patch_config_path(path_parts:tuple[str]=('test', '_config.md'),
 def patch_sys_argv(path_parts:tuple[str], start_path=BASE_DIRECTORY):
     path = build_path(path_parts, start_path)
     return patch('sys.argv', [path])
+
+
+def patch_is_file(return_value:bool):
+    return patch('pathlib.Path.is_file', return_value=return_value)
