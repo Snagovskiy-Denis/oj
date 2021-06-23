@@ -4,7 +4,7 @@ from test.base.fixtures import *
 from paths import build_path
 
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
-                       DESTINATION, TEMPLATE, DATE_FORMAT, 
+                       DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
                       )
 
 
@@ -14,8 +14,11 @@ class SelfCleanedFile:
     def __init__(self, path:Path, data:str=''):
         self._path = path
         self._data = data
-        with open(path, 'w') as f:
-            f.write(data)
+        self._write_file()
+
+    def _write_file(self):
+        with open(self.path, 'w') as f:
+            f.write(self.data)
 
     @property
     def path(self):
@@ -25,11 +28,16 @@ class SelfCleanedFile:
     def data(self):
         return self._data
 
+    def replace_in_data(self, old, new):
+        self._data = self._data.replace(old, new)
+        self._write_file()
+
     def __repr__(self):
         return f'{self.path=}'
 
     def __del__(self):
-        self._path.unlink()
+        if self._path.is_file():
+            self._path.unlink()
 
 
 class SelfCleanedFileFactory:
@@ -65,7 +73,8 @@ class SelfCleanedFileFactory:
         config   = f'''[{DEFAULT_SECTION}]
         {DESTINATION} = {paths[FIXTURE_DESTINATION].parent}
         {TEMPLATE} = {paths[FIXTURE_TEMPLATE]}
-        {DATE_FORMAT} = %%Y-%%M-%%D
+        {DATE_FORMAT} = %%Y-%%m-%%d
+        {EXTENSION} = {FIXTURE_EXTENSION}
 
         [{PATH_SECTION}]
         [{FILENAME_SECTION}]

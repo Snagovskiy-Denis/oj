@@ -18,7 +18,7 @@ class ConfiguratorTest(FilesMixIn, BaseTestCase):
     def test_searches_config_file_in_dunder_file_directory_path(self, _):
         expected_settings: 'destination, date format, template' = [
                 TEST_DIRECTORY,
-                '%Y-%M-%D',
+                FIXTURE_EXTENSION,
                 self.files[FIXTURE_TEMPLATE].path
         ]
 

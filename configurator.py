@@ -10,7 +10,7 @@ class Configurator:
     def __init__(self):
         self.config = ConfigParser()
 
-    def read_config(self):
+    def read_config(self) -> dict():
         configurations = dict()
         self.config.read(self._get_config_path())
 
