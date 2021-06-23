@@ -1,17 +1,22 @@
-from pathlib import Path
-
-
 # General
-BASE_DIRECTORY = Path(__file__).parent.absolute()
+APPLICATION_NAME = 'oj'  # stands for open journal
 
 # Filenames
-ALL_FILES = ('template', 'config', 'destination')
-CONFIG_FILENAME = 'config.md'  # TODO config.ini
+CONFIG_FILENAME = f'{APPLICATION_NAME}.ini'
 
 # Mods
 DEFAULT = 'DEFAULT'
 
 # Config
-PATH_SETTINGS = ('destination', 'template')
-FILENAME_SETTINGS = ('date format',)
+## Sections
+DEFAULT_SECTION = 'DEFAULT'
+PATH_SECTION = 'PATH'
+FILENAME_SECTION = 'FILENAME'
+
+## Settings
+PATH_SETTINGS = DESTINATION, TEMPLATE = ('destination', 'template')
+
+DATE_FORMAT = 'date format'
+FILENAME_SETTINGS = (DATE_FORMAT,)
+
 ALL_SETTINGS = PATH_SETTINGS, FILENAME_SETTINGS

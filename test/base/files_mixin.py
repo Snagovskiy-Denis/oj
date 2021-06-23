@@ -1,6 +1,11 @@
 from pathlib import Path
 
-from constants import ALL_FILES
+from test.base.fixtures import *
+from paths import build_path
+
+from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
+                       DESTINATION, TEMPLATE, DATE_FORMAT, 
+                      )
 
 
 class SelfCleanedFile:
@@ -28,10 +33,10 @@ class SelfCleanedFile:
 
 
 class SelfCleanedFileFactory:
-    def __init__(self, desired_files: tuple[str]):
+    def __init__(self, desired_files: tuple[str: 'filename']):
         self.desired_files = desired_files
 
-    def produce(self) -> dict[str, SelfCleanedFile]:
+    def produce(self) -> dict[str: 'filename', SelfCleanedFile]:
         datas = self.generate_files_data()
         paths = self.generate_filepaths()
 
@@ -42,35 +47,34 @@ class SelfCleanedFileFactory:
         return files
     
     def generate_filepaths(self) -> dict[str: 'filename', Path]:
-        base_path = Path().absolute()  # TODO implement build_path()
-        path = base_path.joinpath('test')
-        return {file: path.joinpath(f'_{file}.md') for file in ALL_FILES}
+        return {file: build_path(('test', f'{FIXTURE_PREFIX}{file}')) 
+                for file in FIXTURE_FILES}
 
     def generate_files_data(self) -> dict[str: 'filename', str: 'data']:
         paths = self.generate_filepaths()
 
-        template = '''# Header 1
+        template = f'''# Header 1
         ## Header 2
-        Test Template text
+        Test {FIXTURE_TEMPLATE.capitalize()} text
 
         - item 1
         - *item 2*
         
         > some quote
         '''
-        config   = f'''[DEFAULT]
-        destination = {paths['destination'].parent}
-        template = {paths['template']}
-        date format = %%Y-%%M-%%D
+        config   = f'''[{DEFAULT_SECTION}]
+        {DESTINATION} = {paths[FIXTURE_DESTINATION].parent}
+        {TEMPLATE} = {paths[FIXTURE_TEMPLATE]}
+        {DATE_FORMAT} = %%Y-%%M-%%D
 
-        [PATH]
-        [FILENAME]
+        [{PATH_SECTION}]
+        [{FILENAME_SECTION}]
         '''  # double % = escape single %
-        return {'template': template, 'config': config}
+        return {FIXTURE_TEMPLATE: template, FIXTURE_CONFIG: config}
 
 
 class FilesMixIn:
-    files_to_create = tuple[str]()
+    files_to_create = tuple[str: 'filename']()
 
     def setUp(self):
         super().setUp()

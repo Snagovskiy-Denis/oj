@@ -4,23 +4,26 @@ from unittest import skip
 from unittest.mock import patch
 
 from test.base.classes import FilesMixIn, BaseTestCase
-from test.base.pathcers import patch_config_path, build_path, patch_is_file
+from test.base.pathcers import patch_config_path, patch_is_file
+from test.base.fixtures import *
 
+from paths import build_path
 from exceptions import SectionReadError, SettingReadError
 
 
 @patch_config_path()
 class ConfiguratorTest(FilesMixIn, BaseTestCase):
-    files_to_create = ('template', 'config')
+    files_to_create = (FIXTURE_TEMPLATE, FIXTURE_CONFIG)
 
     def test_searches_config_file_in_dunder_file_directory_path(self, _):
         expected_settings: 'destination, date format, template' = [
-                build_path(['test']),
+                TEST_DIRECTORY,
                 '%Y-%M-%D',
-                self.files['template'].path
+                self.files[FIXTURE_TEMPLATE].path
         ]
 
-        actual_settings = self.app.read_config_file()
+        self.app.read_config_file()
+        actual_settings = self.app.configurations
 
         for setting in expected_settings:
             self.assertIn(setting, actual_settings.values())
@@ -43,7 +46,7 @@ class ConfiguratorErrorsTest(BaseTestCase):
         with self.assertRaises(ValueError):
             self.app.read_config_file()
 
-        expected_path = str(build_path(('config.md',)))
+        expected_path = str(build_path((FIXTURE_CONFIG,)))
 
         mock_is_file.assert_called_once()
         mock_read.assert_called_once_with(expected_path)
