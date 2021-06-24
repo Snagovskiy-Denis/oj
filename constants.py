@@ -1,6 +1,15 @@
+'''Non-configurable values'''
+
+from pathlib import Path
+
+
 # General
 APPLICATION_NAME = 'oj'  # stands for open journal
 EDITOR = 'EDITOR'
+
+# Paths
+BASE_DIRECTORY = Path(__file__).parent.absolute()
+TEST_DIRECTORY = BASE_DIRECTORY.joinpath('test')
 
 # Filenames
 CONFIG_FILENAME = APPLICATION_NAME + '.ini'

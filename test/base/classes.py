@@ -1,12 +1,14 @@
-import datetime
 import unittest
+from datetime import date
 from unittest.mock import patch
 
-from test.base.files_mixin import FilesMixIn
 import test.base.fixtures as f
-from paths import BASE_DIRECTORY
+from constants import TEST_DIRECTORY
 
-from main import Application
+from test.base.files_mixin import FilesMixIn
+from test.base.system_mixin import SystemMixIn
+
+from oj import Application
 
 
 class BaseTestCase(unittest.TestCase):
@@ -14,7 +16,7 @@ class BaseTestCase(unittest.TestCase):
         self.app = Application()
 
 
-class IntegratedTestCase(FilesMixIn, BaseTestCase):
+class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
     '''Creates test environment to satisfy external dependencies
 
     List of external dependencies:
@@ -23,36 +25,42 @@ class IntegratedTestCase(FilesMixIn, BaseTestCase):
         * today's date
         * environment variables
         * system arguments
+        * file writing
+        * process running
 
     Class creates test files for path-resolving functional and
     patch Configurator._get_config_path to read created config.
+    Afterwards it patchs todas date, env variables and sysargv.
     '''
     files_to_create = (f.TEMPLATE, f.CONFIG)
 
     def setUp(self):
+        self.initiate_test_environment()
+        super().setUp()
+
+    def tearDown(self):
+        self.clear_test_environment()
+
+    def initiate_test_environment(self):
         self.create_files()
+        self.create_fake_date_and_expected_path()
+        self.isolate_from_system()
 
         self.config_path_patcher = patch(
                 'configurator.Configurator._get_config_path', 
                 return_value=self.files[f.CONFIG].path)
-        self.todays_date_patcher = patch('datetime.date', 
-                **{'today.return_value': datetime.date(2012, 12, 21)})
-        self.getenv_patcher = patch('main.getenv', return_value='vi')
-        self.sys_argv_patcher = patch('sys.argv', 
-                [BASE_DIRECTORY.joinpath('main.py')])
-
         self.mock_config_path = self.config_path_patcher.start()
-        self.mock_todays_date = self.todays_date_patcher.start()
-        self.mock_getenv = self.getenv_patcher.start()
-        self.sys_argv_mock = self.sys_argv_patcher
-        super().setUp()
 
-    def tearDown(self):
+    def clear_test_environment(self):
+        self.stop_system_isolation()
+
         self.config_path_patcher.stop()
-        self.todays_date_patcher.stop()
-        self.getenv_patcher.stop()
-        self.sys_argv_patcher.stop()
+        self.date_patcher.stop()
 
+    def create_fake_date_and_expected_path(self):
+        fake_date_str = f.FAKE_DATE.isoformat() + f.EXTENSION
 
-class FunctionalTest(IntegratedTestCase):
-    pass
+        self.expected_path = TEST_DIRECTORY.joinpath(fake_date_str)
+        self.date_patcher = patch('oj.date', 
+                **{'today.return_value': f.FAKE_DATE})
+        self.mock_date = self.date_patcher.start()

@@ -1,10 +1,9 @@
 from pathlib import Path
 
 import test.base.fixtures as f
-from paths import TEST_DIRECTORY
-
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
                        DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
+                       TEST_DIRECTORY,
                       )
 
 
@@ -74,6 +73,12 @@ class SelfCleanedFileFactory:
 
 
 class FilesMixIn:
+    '''Create and delete files
+
+    MixIn manage files but do not manage configurations.
+    Because of that we need to mock path to config later.
+    '''
+
     files_to_create = tuple[str: 'filename']()
 
     def create_files(self):

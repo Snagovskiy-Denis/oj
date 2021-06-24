@@ -1,4 +1,3 @@
-import datetime
 import sys
 import unittest
 from unittest import skip
@@ -9,11 +8,11 @@ import test.base.fixtures as f
 
 from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
                        DATE_FORMAT, DESTINATION, TEMPLATE, EXTENSION,
+                       BASE_DIRECTORY, TEST_DIRECTORY,
                       )
-from paths import BASE_DIRECTORY, TEST_DIRECTORY, NON_EXISTING_PATH
 
 
-@patch('sys.argv', [BASE_DIRECTORY.joinpath('main.py')])
+@patch('sys.argv', [BASE_DIRECTORY.joinpath('oj.py')])
 class ApplicationBehaviorSelectionTest(BaseTestCase):
     def test_get_mode_with_one_sys_argument_set_DEFAULT_mode(self):
         current_mode = self.app.get_mode()
@@ -35,7 +34,7 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
 
 class ApplicationFilenameValidationTest(IntegratedTestCase):
     def assertInDestinationPath(self, path_name:str):
-        datetime.date.today.assert_called_once()
+        self.mock_date.today.assert_called_once()
         expected = TEST_DIRECTORY.joinpath(path_name)
         self.assertEqual(expected, self.app.destination)
 
@@ -90,7 +89,7 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
     def test_writes_if_REWRITE_mode_and_destination_path_does_not_exist(
                 self, mock_write_text
             ):
-        self.app.destination = TEST_DIRECTORY.joinpath(NON_EXISTING_PATH)
+        self.app.destination = f.NON_EXISTING_PATH
         self.app.create_note()
         mock_write_text.assert_called_once()
 
@@ -109,8 +108,8 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
 
 
 @patch('subprocess.run')
-@patch('main.chdir')
-@patch('main.getenv', return_value='vi')
+@patch('oj.chdir')
+@patch('oj.getenv', return_value='vi')
 class ApplicationOpenNoteTest(BaseTestCase):
     def test_cd_to_destination_path_and_run_editor_on_note_file(
                 self, mock_getenv, mock_chdir, mock_run

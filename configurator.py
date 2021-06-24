@@ -2,8 +2,7 @@ from configparser import ConfigParser
 from pathlib import Path
 
 from constants import (PATH_SETTINGS, FILENAME_SETTINGS, ALL_SETTINGS, 
-        CONFIG_FILENAME)
-from paths import BASE_DIRECTORY
+        CONFIG_FILENAME, BASE_DIRECTORY)
 from exceptions import SectionReadError, SettingReadError
 
 

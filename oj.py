@@ -1,6 +1,6 @@
 from os import getenv, chdir
 from pathlib import Path
-import datetime
+from datetime import date
 import subprocess
 
 from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
@@ -11,6 +11,8 @@ from configurator import Configurator
 
 
 class Application:
+    '''Controls scripts commands flow'''
+
     DEFAULT_MODE = DEFAULT_MODE
     REWRITE_MODE = REWRITE_MODE
 
@@ -29,7 +31,7 @@ class Application:
     def build_filename(self):
         self.read_config_file()
 
-        today = datetime.date.today()
+        today = date.today()
         date_format = self.configurations[DATE_FORMAT]
         extension = self.configurations[EXTENSION]
 
