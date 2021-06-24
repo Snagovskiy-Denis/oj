@@ -1,7 +1,9 @@
-import datetime
+from os import getenv, chdir
 from pathlib import Path
+import datetime
+import subprocess
 
-from constants import (DEFAULT_MODE, REWRITE_MODE,
+from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
                        EXTENSION, DESTINATION, DATE_FORMAT, TEMPLATE,
                       )
 
@@ -30,8 +32,8 @@ class Application:
         today = datetime.date.today()
         date_format = self.configurations[DATE_FORMAT]
         extension = self.configurations[EXTENSION]
-        filename = f'{today.strftime(date_format)}{extension}'
-        
+
+        filename = today.strftime(date_format) + extension
         self.destination = self.configurations[DESTINATION].joinpath(filename)
 
     def read_template_file(self):
@@ -43,3 +45,14 @@ class Application:
         if self.get_mode() == self.REWRITE_MODE \
                             or not self.destination.exists():
             self.destination.write_text(self.template)
+
+    def open_note(self):
+        editor = getenv(EDITOR)
+        if not editor:
+            raise AttributeError('EDITOR environment variable is unset')
+        chdir(self.destination)
+        subprocess.run([editor, self.destination])
+
+
+if __name__ == '__main__':
+    pass

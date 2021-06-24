@@ -1,5 +1,6 @@
 # General
 APPLICATION_NAME = 'oj'  # stands for open journal
+EDITOR = 'EDITOR'
 
 # Filenames
 CONFIG_FILENAME = APPLICATION_NAME + '.ini'

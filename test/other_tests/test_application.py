@@ -9,7 +9,7 @@ from test.base.classes import BaseTestCase, IntegratedTestCase
 from test.base.patchers import patch_sys_argv, patch_config_path
 import test.base.fixtures as f
 
-from constants import (DEFAULT_MODE, REWRITE_MODE,
+from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
                        DATE_FORMAT, DESTINATION, TEMPLATE, EXTENSION,
                       )
 from paths import TEST_DIRECTORY, NON_EXISTING_PATH 
@@ -111,6 +111,34 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
         self.app.create_note()
 
         mock_write_text.assert_called_once_with(template)
+
+
+@patch('subprocess.run')
+@patch('main.chdir')
+@patch('main.getenv', return_value='vi')
+class ApplicationOpenNoteTest(BaseTestCase):
+    def test_cd_to_destination_path_and_run_editor_on_note_file(
+                self, mock_getenv, mock_chdir, mock_run
+            ):
+        destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
+        self.app.destination = destination 
+
+        self.app.open_note()
+
+        mock_chdir.assert_called_once_with(destination)
+        mock_getenv.assert_called_once_with(EDITOR)
+        mock_run.assert_called_once_with(
+                            [mock_getenv.return_value, destination])
+
+    def test_raises_error_if_EDITOR_env_variable_unset(
+                self, mock_getenv, mock_chdir, mock_run
+            ):
+        mock_getenv.return_value = None
+        with self.assertRaises(AttributeError):
+            self.app.open_note()
+        mock_chdir.assert_not_called()
+        mock_getenv.assert_called_once_with(EDITOR)
+        mock_run.assert_not_called()
 
 
 if __name__ == '__main__':

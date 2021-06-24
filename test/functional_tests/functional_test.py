@@ -9,7 +9,7 @@ import test.base.fixtures as f
 from test.base.classes import FunctionalTest
 from test.base.patchers import patch_sys_argv, patch_config_path
 
-from constants import DEFAULT_MODE, DESTINATION, TEMPLATE, DATE_FORMAT
+from constants import DEFAULT_MODE, DESTINATION, TEMPLATE, DATE_FORMAT, EDITOR
 
 
 class FirstLaunchTest(FunctionalTest):
@@ -77,12 +77,16 @@ class FirstLaunchTest(FunctionalTest):
             mock_write_text.assert_called_once_with(
                          self.files[f.TEMPLATE].data)
 
-        # It opens file in EDITOR described in environment variable
-
-        # TODO last step of this test
-        self.fail('finish me!')
-        with patch('subprocess') as mock_subprocess:
-            self.app.open_note()
+        # It opens file in EDITOR (environment variable)
+        #   * working directory changed to destination parent
+        with patch('subprocess.run') as mock_subprocess_run:
+            with patch('main.getenv', return_value='vi') as mock_getenv:
+                with patch('main.chdir') as mock_chdir:
+                    self.app.open_note()
+                    mock_chdir.assert_called_once_with(destination)
+                mock_getenv.assert_called_once_with(EDITOR)
+            mock_subprocess_run.assert_called_once_with(
+                    [mock_getenv.return_value, mock_chdir.call_args.args[0]])
 
 
 if __name__ == '__main__':
