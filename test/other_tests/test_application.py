@@ -1,27 +1,24 @@
 import datetime
-import os
 import sys
 import unittest
 from unittest import skip
 from unittest.mock import Mock, patch, call
 
 from test.base.classes import BaseTestCase, IntegratedTestCase
-from test.base.patchers import patch_sys_argv, patch_config_path
 import test.base.fixtures as f
 
 from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
                        DATE_FORMAT, DESTINATION, TEMPLATE, EXTENSION,
                       )
-from paths import TEST_DIRECTORY, NON_EXISTING_PATH 
+from paths import BASE_DIRECTORY, TEST_DIRECTORY, NON_EXISTING_PATH
 
 
+@patch('sys.argv', [BASE_DIRECTORY.joinpath('main.py')])
 class ApplicationBehaviorSelectionTest(BaseTestCase):
-    @patch_sys_argv(('main.py',))
     def test_get_mode_with_one_sys_argument_set_DEFAULT_mode(self):
         current_mode = self.app.get_mode()
         self.assertEqual(DEFAULT_MODE, current_mode)
 
-    @patch_sys_argv(('main.py',))
     def test_remember_mode_if_number_of_sys_arguments_changed(self):
         initial_mode = self.app.get_mode()
 
@@ -36,26 +33,24 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
         self.assertEqual(DEFAULT_MODE, current_mode)
 
 
-@patch('datetime.date', **{'today.return_value': datetime.date(2012, 12, 21)})
 class ApplicationFilenameValidationTest(IntegratedTestCase):
     def assertInDestinationPath(self, path_name:str):
         datetime.date.today.assert_called_once()
         expected = TEST_DIRECTORY.joinpath(path_name)
         self.assertEqual(expected, self.app.destination)
 
-    def test_builds_destination_with_filename_in_isoformat_date(self, _):
+    def test_builds_destination_with_filename_in_isoformat_date(self):
         self.app.build_filename()
         self.assertInDestinationPath('2012-12-21.md')
 
-    def test_builds_destination_with_filename_with_custom_date_format(
-                                                    self, _):
+    def test_builds_destination_with_filename_with_custom_date_format(self):
         self.files[f.CONFIG].replace_in_data(
                 '%%Y-%%m-%%d', '%%d.%%m.%%Y')
         self.app.build_filename()
         self.assertInDestinationPath('21.12.2012.md')
 
     @skip
-    def test_is_destination_valid_with_valid_destination(self, _):
+    def test_is_destination_valid_with_valid_destination(self):
         destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
         mock_destination = Mock(return_value=destination)
         self.app.destination = mock_destination

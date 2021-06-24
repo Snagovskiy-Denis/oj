@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import test.base.fixtures as f
-from paths import build_path
+from paths import TEST_DIRECTORY
 
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
                        DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
@@ -55,7 +55,7 @@ class SelfCleanedFileFactory:
         return files
     
     def generate_filepaths(self) -> dict[str: 'filename', Path]:
-        return {file: build_path(('test', file)) for file in f.FILES}
+        return {file: TEST_DIRECTORY.joinpath(file) for file in f.FILES}
 
     def generate_files_data(self) -> dict[str: 'filename', str: 'data']:
         paths = self.generate_filepaths()

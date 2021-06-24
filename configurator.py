@@ -3,6 +3,7 @@ from pathlib import Path
 
 from constants import (PATH_SETTINGS, FILENAME_SETTINGS, ALL_SETTINGS, 
         CONFIG_FILENAME)
+from paths import BASE_DIRECTORY
 from exceptions import SectionReadError, SettingReadError
 
 
@@ -33,7 +34,7 @@ class Configurator:
         return configurations
 
     def _get_config_path(self):
-        path = Path(__file__).parent.joinpath(CONFIG_FILENAME)
+        path = BASE_DIRECTORY.joinpath(CONFIG_FILENAME)
         if not path.is_file():
             raise FileNotFoundError('Config file not found on path:\n\n' \
                     f'{path=}')

@@ -1,19 +1,15 @@
-import datetime
 import os
-import subprocess
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 import test.base.fixtures as f
 from test.base.classes import FunctionalTest
-from test.base.patchers import patch_sys_argv, patch_config_path
 
 from constants import DEFAULT_MODE, DESTINATION, TEMPLATE, DATE_FORMAT, EDITOR
 
 
 class FirstLaunchTest(FunctionalTest):
-    @patch_sys_argv(('main.py',))
     def test_launch_without_sys_args_with_default_settings_creates_new_note(
                                                                     self):
         # Script is being executed
@@ -48,9 +44,7 @@ class FirstLaunchTest(FunctionalTest):
         filename = '2012-12-21.md'
         destination = default_settings[DESTINATION].joinpath(filename)
 
-        config = {'today.return_value': datetime.date(2012, 12, 21)}
-        with patch('datetime.date', **config):
-            self.app.build_filename()
+        self.app.build_filename()
 
         self.assertEqual(destination.name, self.app.destination.name)
         self.assertEqual(destination, self.app.destination)
@@ -80,13 +74,12 @@ class FirstLaunchTest(FunctionalTest):
         # It opens file in EDITOR (environment variable)
         #   * working directory changed to destination parent
         with patch('subprocess.run') as mock_subprocess_run:
-            with patch('main.getenv', return_value='vi') as mock_getenv:
-                with patch('main.chdir') as mock_chdir:
-                    self.app.open_note()
-                    mock_chdir.assert_called_once_with(destination)
-                mock_getenv.assert_called_once_with(EDITOR)
+            with patch('main.chdir') as mock_chdir:
+                self.app.open_note()
+                mock_chdir.assert_called_once_with(destination)
+            self.mock_getenv.assert_called_once_with(EDITOR)
             mock_subprocess_run.assert_called_once_with(
-                    [mock_getenv.return_value, mock_chdir.call_args.args[0]])
+                [self.mock_getenv.return_value, mock_chdir.call_args.args[0]])
 
 
 if __name__ == '__main__':
