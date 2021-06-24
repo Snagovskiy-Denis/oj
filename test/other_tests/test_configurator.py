@@ -3,23 +3,20 @@ import unittest
 from unittest import skip
 from unittest.mock import patch
 
-from test.base.classes import FilesMixIn, BaseTestCase
-from test.base.pathcers import patch_config_path, patch_is_file
-from test.base.fixtures import *
+import test.base.fixtures as f
+from test.base.classes import IntegratedTestCase, BaseTestCase
+from test.base.patchers import patch_config_path, patch_is_file
 
 from paths import build_path
 from exceptions import SectionReadError, SettingReadError
 
 
-@patch_config_path()
-class ConfiguratorTest(FilesMixIn, BaseTestCase):
-    files_to_create = (FIXTURE_TEMPLATE, FIXTURE_CONFIG)
-
-    def test_searches_config_file_in_dunder_file_directory_path(self, _):
+class ConfiguratorTest(IntegratedTestCase):
+    def test_searches_config_file_in_dunder_file_directory_path(self):
         expected_settings: 'destination, date format, template' = [
-                TEST_DIRECTORY,
-                FIXTURE_EXTENSION,
-                self.files[FIXTURE_TEMPLATE].path
+                f.TEST_DIRECTORY,
+                f.EXTENSION,
+                self.files[f.TEMPLATE].path
         ]
 
         self.app.read_config_file()
@@ -29,7 +26,7 @@ class ConfiguratorTest(FilesMixIn, BaseTestCase):
             self.assertIn(setting, actual_settings.values())
 
     @skip
-    def test_path_settings_converts_to_Path_class(self):
+    def test_converts_path_settings_from_str_to_Path_class(self):
         pass
 
 
@@ -56,7 +53,7 @@ class ConfiguratorErrorsTest(BaseTestCase):
         with self.assertRaises(ValueError):
             self.app.read_config_file()
 
-        expected_path = str(build_path((FIXTURE_CONFIG,)))
+        expected_path = str(build_path((f.CONFIG,)))
 
         for mock in mock_is_file, mock_sections:
             mock.assert_called_once()

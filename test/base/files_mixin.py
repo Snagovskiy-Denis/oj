@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from test.base.fixtures import *
+import test.base.fixtures as f
 from paths import build_path
 
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
@@ -55,38 +55,28 @@ class SelfCleanedFileFactory:
         return files
     
     def generate_filepaths(self) -> dict[str: 'filename', Path]:
-        return {file: build_path(('test', f'{FIXTURE_PREFIX}{file}')) 
-                for file in FIXTURE_FILES}
+        return {file: build_path(('test', file)) for file in f.FILES}
 
     def generate_files_data(self) -> dict[str: 'filename', str: 'data']:
         paths = self.generate_filepaths()
 
-        template = f'''# Header 1
-        ## Header 2
-        Test {FIXTURE_TEMPLATE.capitalize()} text
-
-        - item 1
-        - *item 2*
-        
-        > some quote
-        '''
+        template = f.TEMPLATE_DATA
         config   = f'''[{DEFAULT_SECTION}]
-        {DESTINATION} = {paths[FIXTURE_DESTINATION].parent}
-        {TEMPLATE} = {paths[FIXTURE_TEMPLATE]}
+        {DESTINATION} = {paths[f.DESTINATION].parent}
+        {TEMPLATE} = {paths[f.TEMPLATE]}
         {DATE_FORMAT} = %%Y-%%m-%%d
-        {EXTENSION} = {FIXTURE_EXTENSION}
+        {EXTENSION} = {f.EXTENSION}
 
         [{PATH_SECTION}]
         [{FILENAME_SECTION}]
         '''  # double % = escape single %
-        return {FIXTURE_TEMPLATE: template, FIXTURE_CONFIG: config}
+        return {f.TEMPLATE: template, f.CONFIG: config}
 
 
 class FilesMixIn:
     files_to_create = tuple[str: 'filename']()
 
-    def setUp(self):
-        super().setUp()
+    def create_files(self):
         self.files = dict()
         if self.files_to_create:
             factory = SelfCleanedFileFactory((self.files_to_create))

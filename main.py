@@ -1,7 +1,7 @@
 import datetime
 from pathlib import Path
 
-from constants import (DEFAULT, REWRITE,
+from constants import (DEFAULT_MODE, REWRITE_MODE,
                        EXTENSION, DESTINATION, DATE_FORMAT, TEMPLATE,
                       )
 
@@ -9,14 +9,14 @@ from configurator import Configurator
 
 
 class Application:
-    DEFAULT = DEFAULT
-    REWRITE = REWRITE
+    DEFAULT_MODE = DEFAULT_MODE
+    REWRITE_MODE = REWRITE_MODE
 
     def __init__(self):
         self.configurations = dict()
         self.destination:Path = None
         self.template = ''
-        self.mode = self.DEFAULT
+        self.mode = self.DEFAULT_MODE
 
     def get_mode(self) -> str:
         return self.mode
@@ -40,7 +40,6 @@ class Application:
         self.template = self.configurations[TEMPLATE].read_text()
 
     def create_note(self):
-        if self.get_mode() == self.REWRITE:
-            self.destination.write_text(self.template)
-        if not self.destination.exists():
+        if self.get_mode() == self.REWRITE_MODE \
+                            or not self.destination.exists():
             self.destination.write_text(self.template)

@@ -2,11 +2,11 @@
 APPLICATION_NAME = 'oj'  # stands for open journal
 
 # Filenames
-CONFIG_FILENAME = f'{APPLICATION_NAME}.ini'
+CONFIG_FILENAME = APPLICATION_NAME + '.ini'
 
 # Mods
-DEFAULT = 'DEFAULT'
-REWRITE = 'REWRITE'
+DEFAULT_MODE = 'default'
+REWRITE_MODE = 'rewrite'
 
 # Config
 ## Sections

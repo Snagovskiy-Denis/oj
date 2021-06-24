@@ -1,13 +1,13 @@
 from pathlib import Path
 from unittest.mock import patch
 
-from test.base.fixtures import *
+import test.base.fixtures as f
 
 from paths import build_path, BASE_DIRECTORY, TEST_DIRECTORY
 
 
 def patch_config_path(
-            path_parts:tuple[str]=(f'{FIXTURE_PREFIX}{FIXTURE_CONFIG}',),
+            path_parts:tuple[str]=(f'{f.CONFIG}',),
             start_path=TEST_DIRECTORY
         ):
     path = build_path(path_parts, start_path)

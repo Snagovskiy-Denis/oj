@@ -6,10 +6,10 @@ from unittest import skip
 from unittest.mock import Mock, patch, call
 
 from test.base.classes import BaseTestCase, IntegratedTestCase
-from test.base.pathcers import patch_sys_argv, patch_config_path
-from test.base.fixtures import *
+from test.base.patchers import patch_sys_argv, patch_config_path
+import test.base.fixtures as f
 
-from constants import (DEFAULT, REWRITE,
+from constants import (DEFAULT_MODE, REWRITE_MODE,
                        DATE_FORMAT, DESTINATION, TEMPLATE, EXTENSION,
                       )
 from paths import TEST_DIRECTORY, NON_EXISTING_PATH 
@@ -19,13 +19,13 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
     @patch_sys_argv(('main.py',))
     def test_get_mode_with_one_sys_argument_set_DEFAULT_mode(self):
         current_mode = self.app.get_mode()
-        self.assertEqual(DEFAULT, current_mode)
+        self.assertEqual(DEFAULT_MODE, current_mode)
 
     @patch_sys_argv(('main.py',))
     def test_remember_mode_if_number_of_sys_arguments_changed(self):
         initial_mode = self.app.get_mode()
 
-        sys.argv = ['argument'] * 5
+        sys.argv = [sys.argv[0]] * 5
         current_mode = self.app.get_mode()
         self.assertEqual(initial_mode, current_mode)
 
@@ -33,34 +33,29 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
     def test_get_mode_with_three_or_more_sys_arguments_raise_exception(self):
         sys.argv = ['script_path', 'mode', 'unknown_argument']
         current_mode = self.app.get_mode()
-        self.assertEqual(DEFAULT, current_mode)
+        self.assertEqual(DEFAULT_MODE, current_mode)
 
 
-@patch_config_path()
 @patch('datetime.date', **{'today.return_value': datetime.date(2012, 12, 21)})
 class ApplicationFilenameValidationTest(IntegratedTestCase):
-    files_to_create = (FIXTURE_TEMPLATE, FIXTURE_CONFIG)
-
     def assertInDestinationPath(self, path_name:str):
         datetime.date.today.assert_called_once()
         expected = TEST_DIRECTORY.joinpath(path_name)
         self.assertEqual(expected, self.app.destination)
 
-    def test_builds_destination_with_filename_in_isoformat_date(self, _, __):
+    def test_builds_destination_with_filename_in_isoformat_date(self, _):
         self.app.build_filename()
         self.assertInDestinationPath('2012-12-21.md')
 
     def test_builds_destination_with_filename_with_custom_date_format(
-                                                    self, _, __):
-        self.files[FIXTURE_CONFIG].replace_in_data(
+                                                    self, _):
+        self.files[f.CONFIG].replace_in_data(
                 '%%Y-%%m-%%d', '%%d.%%m.%%Y')
         self.app.build_filename()
         self.assertInDestinationPath('21.12.2012.md')
 
     @skip
-    def test_is_destination_valid_with_valid_destination(
-                self, mock_date, mock_read_config
-            ):
+    def test_is_destination_valid_with_valid_destination(self, _):
         destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
         mock_destination = Mock(return_value=destination)
         self.app.destination = mock_destination
@@ -69,17 +64,14 @@ class ApplicationFilenameValidationTest(IntegratedTestCase):
         mock_destination.called_with()
 
 
-@patch_config_path()
 class ApplicationTemplateTest(IntegratedTestCase):
-    files_to_create = (FIXTURE_TEMPLATE, FIXTURE_CONFIG)
-
-    def test_reads_template_file_if_it_exists(self, _):
+    def test_reads_template_file_if_it_exists(self):
         self.assertEqual(self.app.template, '')
         self.app.read_template_file()
-        self.assertEqual(self.app.template, self.files[FIXTURE_TEMPLATE].data)
+        self.assertEqual(self.app.template, self.files[f.TEMPLATE].data)
 
-    def test_raises_error_if_template_file_does_not_exist_on_path(self, _):
-        del self.files[FIXTURE_TEMPLATE]
+    def test_raises_error_if_template_file_does_not_exist_on_path(self):
+        del self.files[f.TEMPLATE]
         with self.assertRaises(FileNotFoundError):
             self.app.read_template_file()
 
@@ -97,7 +89,7 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
     def test_do_not_write_if_destination_path_exists(self, mock_write_text):
         self.app.destination = TEST_DIRECTORY
         self.app.create_note()
-        self.assertEqual(self.app.get_mode(), DEFAULT)
+        self.assertEqual(self.app.get_mode(), DEFAULT_MODE)
         mock_write_text.assert_not_called()
 
     def test_writes_if_REWRITE_mode_and_destination_path_does_not_exist(
@@ -112,7 +104,7 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
                 self, mock_write_text
             ):
         template = f'{__class__.__name__} test template body'
-        self.app.mode = REWRITE
+        self.app.mode = REWRITE_MODE
         self.app.destination = TEST_DIRECTORY
         self.app.template = template
 
