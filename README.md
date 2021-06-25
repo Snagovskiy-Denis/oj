@@ -3,8 +3,8 @@ Simple configurable script for managing daily notes.
 
 Useful:
 
-    * test/functional_test/\* = use cases \ expected behaviour
-    * `python -c 'import configurator; help(configurator)` = settings
+- test/functional_test/\* = use cases \ expected behaviour
+- `python -c 'import configurator; help(configurator)` = settings
 
 # Usage
 1. Create config file — `touch $HOME/.config/oj.ini` 
