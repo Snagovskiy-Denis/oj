@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from os import getenv, chdir
 from pathlib import Path
 from datetime import date
@@ -52,9 +53,16 @@ class Application:
         editor = getenv(EDITOR)
         if not editor:
             raise AttributeError('EDITOR environment variable is unset')
-        chdir(self.destination)
+        chdir(self.destination.parent)
         subprocess.run([editor, self.destination])
+
+    def run(self):
+        self.read_config_file()
+        self.build_filename()
+        self.read_template_file()
+        self.create_note()
+        self.open_note()
 
 
 if __name__ == '__main__':
-    pass
+    Application().run()

@@ -1,7 +1,9 @@
 from unittest.mock import patch
 
 import test.base.fixtures as f
-from constants import BASE_DIRECTORY, TEST_DIRECTORY
+from constants import BASE_DIRECTORY, TEST_DIRECTORY, APPLICATION_NAME
+
+from oj import Application
 
 
 class SystemMixIn:

@@ -10,13 +10,6 @@ from test.base.classes import IntegratedTestCase
 class FunctionalTest(IntegratedTestCase):
     '''Create test environment and define new aseertion methods'''
 
-    def assertPathsReadWriteAccessIsOK(self):
-        self.assertFileExists(f.TEMPLATE)
-        self.assertTrue(os.access(f.TEST_DIRECTORY, os.W_OK), 
-        "Test have not write access to directory:\n{f.TEST_DIRECTORY}")
-        self.assertTrue(os.access(self.files[f.TEMPLATE].path, os.R_OK),
-        "Test have not read access on path:\n{f.TEST_DIRECTORY}")
-
     def assertFileExists(self, filename: str):
         self.assertTrue(self.files[filename].path.is_file())
 
@@ -43,7 +36,7 @@ class FunctionalTest(IntegratedTestCase):
         self.mock_write_text.assert_called_once_with(template)
 
     def assertFileWasOpened(self):
-        self.mock_chdir.assert_called_once_with(self.expected_path)
+        self.mock_chdir.assert_called_once_with(self.expected_path.parent)
         self.mock_getenv.assert_called_once_with(EDITOR)
         self.mock_subprocess_run.assert_called_once_with(
             [self.mock_getenv.return_value, self.expected_path])

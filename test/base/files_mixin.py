@@ -17,8 +17,8 @@ class SelfCleanedFile:
         self._data = data
         self._write_file()
 
-    def _write_file(self):
-        if not self._path.is_file():
+    def _write_file(self, rewrite: bool = False):
+        if rewrite or not self._path.is_file():
             # Path.write_text might be patched
             with open(self._path, 'w') as f:  
                 f.write(self._data)
@@ -33,7 +33,7 @@ class SelfCleanedFile:
 
     def replace_in_data(self, old, new):
         self._data = self._data.replace(old, new)
-        self._write_file()
+        self._write_file(rewrite=True)
 
     def __repr__(self):
         return f'{self.path.name=}'
@@ -65,7 +65,9 @@ class SelfCleanedFileFactory:
 
         template = f.TEMPLATE_DATA
         config   = f'''[{DEFAULT_SECTION}]
+        # ISO 8601
         {DATE_FORMAT} = %%Y-%%m-%%d
+        # Markdown
         {EXTENSION} = {f.EXTENSION}
 
         [{PATH_SECTION}]

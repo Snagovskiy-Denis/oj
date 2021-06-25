@@ -40,23 +40,18 @@ class FirstLaunchTest(FunctionalTest):
         }
 
         # John runs oj
-        # TODO self.app.run
+        self.app.run()
 
         # He sees that:
         #   * oj creates note on DESTINATION path
         #   * notes name is formated todays date with {f.EXTENSION}
-        self.app.read_config_file()    # TODO remove this
-        self.app.build_filename()      # TODO remove this
         self.assertPathAndFilenameAreValid()
 
         #   * oj write his template text to note
-        self.app.read_template_file()  # TODO remove this
-        self.app.create_note()         # TODO remove this
         template = self.files[f.TEMPLATE].data
         self.assertTemplateIsWritten(template)
 
         #   * oj opens note in editor settled by ${f.EDITOR}
-        self.app.open_note()           # TODO remove this
         self.assertFileWasOpened()
 
 
@@ -97,7 +92,7 @@ class FirstLaunchTestDeprecated(FunctionalTest):
 
         #   * destination path is writable
         #   * template file on given path is readable
-        self.assertPathsReadWriteAccessIsOK()
+        # self.assertPathsReadWriteAccessIsOK()
 
         self.app.read_template_file()
         template = self.app.template
