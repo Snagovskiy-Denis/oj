@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 
 import test.base.fixtures as f
-from constants import TEST_DIRECTORY, EDITOR
+from constants import EDITOR
 
 from test.base.classes import IntegratedTestCase
 

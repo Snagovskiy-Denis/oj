@@ -57,6 +57,8 @@ class Application:
         subprocess.run([editor, self.destination])
 
     def run(self):
+        # TODO import argparse
+        # create default config file (from Configurator.__doc__) if sys args
         self.read_config_file()
         self.build_filename()
         self.read_template_file()

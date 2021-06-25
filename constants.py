@@ -1,18 +1,16 @@
 '''Non-configurable values'''
 
+from os import getenv
 from pathlib import Path
 
 
 # General
-APPLICATION_NAME = 'oj'  # stands for open journal
+APPLICATION_NAME = 'oj'
 EDITOR = 'EDITOR'
 
-# Paths
-BASE_DIRECTORY = Path(__file__).parent.absolute()
-TEST_DIRECTORY = BASE_DIRECTORY.joinpath('test')
-
 # Filenames
-CONFIG_FILENAME = f'.{APPLICATION_NAME}.ini'
+CONFIG_FILENAME = f'{APPLICATION_NAME}.ini'
+CONFIG_PATH = Path(getenv('HOME')).joinpath('.config', CONFIG_FILENAME)
 
 # Mods
 DEFAULT_MODE = 'default'

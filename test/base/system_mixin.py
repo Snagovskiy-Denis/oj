@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import test.base.fixtures as f
-from constants import BASE_DIRECTORY, TEST_DIRECTORY, APPLICATION_NAME
 
 from oj import Application
 
@@ -21,7 +20,7 @@ class SystemMixIn:
         #       empty dict as config is valid
         self.getenv_patcher = patch('oj.getenv', return_value=f.EDITOR)
         self.sys_argv_patcher = patch('sys.argv', 
-                [BASE_DIRECTORY.joinpath('oj.py')])
+                [f.TEST_DIRECTORY.parent.joinpath('oj.py')])
         self.write_text_patcher = patch('pathlib.Path.write_text')
         self.subprocess_run_patcher = patch('subprocess.run')
         self.chdir_patcher = patch('oj.chdir')

@@ -3,7 +3,6 @@ from datetime import date
 from unittest.mock import patch
 
 import test.base.fixtures as f
-from constants import TEST_DIRECTORY
 
 from test.base.files_mixin import FilesMixIn
 from test.base.system_mixin import SystemMixIn
@@ -72,7 +71,7 @@ class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
     def create_fake_date_and_expected_path(self):
         fake_date_str = f.FAKE_DATE.isoformat() + f.EXTENSION
 
-        self.expected_path = TEST_DIRECTORY.joinpath(fake_date_str)
+        self.expected_path = f.TEST_DIRECTORY.joinpath(fake_date_str)
         self.date_patcher = patch('oj.date', 
                 **{'today.return_value': f.FAKE_DATE})
         self.mock_date = self.date_patcher.start()

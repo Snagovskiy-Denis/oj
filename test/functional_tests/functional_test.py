@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import test.base.fixtures as f
 from constants import (DEFAULT_MODE, DESTINATION, TEMPLATE, 
-        DATE_FORMAT, TEST_DIRECTORY)
+        DATE_FORMAT)
 
 from test.base.functional_test_class import FunctionalTest
 
@@ -30,11 +30,11 @@ class FirstRunTest(FunctionalTest):
         self.assertFileExists(f.CONFIG)
 
         # He writes to his new config file valid settings:
-        #   * path to where create the note: {TEST_DIRECTORY}
+        #   * path to where create the note: {f.TEST_DIRECTORY}
         #   * path to his template file: {self.files[f.TEMPLATE].path}
         #   * {f.DATE_FORMAT} as desired filename format
         john_settings = {
-                DESTINATION: TEST_DIRECTORY,
+                DESTINATION: f.TEST_DIRECTORY,
                 TEMPLATE: self.files[f.TEMPLATE].path,
                 DATE_FORMAT: f.DATE_FORMAT,
         }

@@ -5,7 +5,6 @@ from unittest.mock import patch
 import test.base.fixtures as f
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
                        DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
-                       TEST_DIRECTORY,
                       )
 
 
@@ -58,16 +57,15 @@ class SelfCleanedFileFactory:
         return files
     
     def generate_filepaths(self) -> dict[str: 'filename', Path]:
-        return {file: TEST_DIRECTORY.joinpath(file) for file in f.FILES}
+        return {file: f.TEST_DIRECTORY.joinpath(file) for file in f.FILES}
 
     def generate_files_data(self) -> dict[str: 'filename', str: 'data']:
         paths = self.generate_filepaths()
 
         template = f.TEMPLATE_DATA
+        dest     = template
         config   = f'''[{DEFAULT_SECTION}]
-        # ISO 8601
         {DATE_FORMAT} = %%Y-%%m-%%d
-        # Markdown
         {EXTENSION} = {f.EXTENSION}
 
         [{PATH_SECTION}]
@@ -76,7 +74,6 @@ class SelfCleanedFileFactory:
 
         [{FILENAME_SECTION}]
         '''  # double % = escape single %
-        dest = template
         return {f.TEMPLATE: template, f.CONFIG: config, f.DESTINATION: dest}
 
 
