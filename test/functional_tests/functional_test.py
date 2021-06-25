@@ -13,10 +13,10 @@ from test.base.functional_test_class import FunctionalTest
 from configurator import Configurator
 
 
-class FirstLaunchTest(FunctionalTest):
+class FirstRunTest(FunctionalTest):
     required_files = (f.TEMPLATE,)
 
-    def test_launch_with_valid_settings_creates_new_note(self):
+    def test_run_with_valid_settings_creates_new_note(self):
         # John has downloaded oj
         # He wants to create new note by his template
         self.assertFileExists(f.TEMPLATE)
@@ -45,67 +45,37 @@ class FirstLaunchTest(FunctionalTest):
         # He sees that:
         #   * oj creates note on DESTINATION path
         #   * notes name is formated todays date with {f.EXTENSION}
-        self.assertPathAndFilenameAreValid()
-
         #   * oj write his template text to note
-        template = self.files[f.TEMPLATE].data
-        self.assertTemplateIsWritten(template)
+        self.assertEqual(self.expected_path, self.app.destination)
+        self.assertEqual(self.expected_path.name, self.app.destination.name)
 
-        #   * oj opens note in editor settled by ${f.EDITOR}
+        template = self.files[f.TEMPLATE].data
+        self.assertTemplateIsWrittenOnDestination(template)
+
+        #   * oj opens note in editor settled by {f.EDITOR} env variable
         self.assertFileWasOpened()
 
 
-class FirstLaunchTestDeprecated(FunctionalTest):
-    def test_launch_without_sys_args_with_default_settings_creates_new_note_(self):
-        from warnings import warn
-        warn(DeprecationWarning('Test does not tell *user* story'))
-        # Script is being executed
-        # There is only script pathname in system arguments
-        # Because of that Script chooses default behaviour mode
-        self.assertEqual(self.app.get_mode(), DEFAULT_MODE)
+class OpenCreatedNoteTest(FunctionalTest):
+    required_files = (f.TEMPLATE, f.CONFIG, f.DESTINATION)
 
-        # Secondly it checks if configuration file exist and reads it
-        self.assertFileExists(f.CONFIG)
+    def test_run_with_existing_note_opens_it_without_overwriting_it(self):
+        # John created new note with oj by his template
+        template = self.files[f.TEMPLATE].data
+        note = self.files[f.DESTINATION].data
+        self.assertEqual(note, template)
 
-        self.app.read_config_file()
-        settings = self.app.configurations
+        # He was being editing his new note when he accidentally closed it
+        self.files[f.DESTINATION].replace_in_data(f.TEMPLATE, 'I am John a')
+        edited_note = self.files[f.DESTINATION].data
+        self.assertNotEqual(edited_note, note)
 
-        # There are default settings values for:
-        #   * destination path
-        #   * template path
-        #   * filenames' date format
-        default_settings = {
-                DESTINATION: TEST_DIRECTORY,
-                TEMPLATE: self.files[f.TEMPLATE].path,
-                DATE_FORMAT: f.DATE_FORMAT,
-        }
-        self.assertIncludeSettings(default_settings, settings)
+        # John starts oj again and finds that his note is not overwritten
+        self.app.run()
+        note_after_new_run = self.files[f.DESTINATION].data
 
-        # It checks that default settings are valid and finds that:
-        #   * files' name is todays date
-        #   * date is formated by given date format
-        self.app.build_filename()
-        self.assertPathAndFilenameAreValid()
-
-        #   * destination file does not exist yet
-        self.assertFalse(self.app.destination.exists())
-
-        #   * destination path is writable
-        #   * template file on given path is readable
-        # self.assertPathsReadWriteAccessIsOK()
-
-        self.app.read_template_file()
-        template = self.app.template
-        self.assertEqual(template, self.files[f.TEMPLATE].data)
-
-        # It creates markdown file on destination path
-        #   * files content identical to file on template path
-        self.app.create_note()
-        self.assertTemplateIsWritten(template)
-
-        # It opens file in EDITOR (environment variable)
-        #   * working directory changed to destination parent
-        self.app.open_note()
+        self.mock_write_text.assert_not_called()
+        self.assertEqual(note_after_new_run, edited_note)
         self.assertFileWasOpened()
 
 

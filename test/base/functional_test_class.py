@@ -14,25 +14,9 @@ class FunctionalTest(IntegratedTestCase):
         self.assertTrue(self.files[filename].path.is_file())
 
     def assertFileDoesNotExist(self, filename: str):
-        with self.assertRaises(KeyError):
-            self.assertFileExists(filename)
+        self.assertTrue(filename not in self.files.keys())
 
-    def assertIncludeSettings(self, expected: dict, actual: dict):
-        # self.assertDictEqual(expected | actual, expected)# output is ugly
-        expected, actual = [set(s.items()) for s in (expected, actual)]
-        try:
-            assert expected <= actual
-        except AssertionError as e:
-            message = 'These settings: "{}" are not in the actual: {}'
-            missing = dict(expected - actual)
-            e.args += (message.format(missing, actual),)
-            raise
-
-    def assertPathAndFilenameAreValid(self):
-        self.assertEqual(self.expected_path, self.app.destination)
-        self.assertEqual(self.expected_path.name, self.app.destination.name)
-
-    def assertTemplateIsWritten(self, template):
+    def assertTemplateIsWrittenOnDestination(self, template):
         self.mock_write_text.assert_called_once_with(template)
 
     def assertFileWasOpened(self):
@@ -40,3 +24,8 @@ class FunctionalTest(IntegratedTestCase):
         self.mock_getenv.assert_called_once_with(EDITOR)
         self.mock_subprocess_run.assert_called_once_with(
             [self.mock_getenv.return_value, self.expected_path])
+
+    def reset_open_note_related_mocks(self):
+        self.mock_chdir.reset_mock()
+        self.mock_getenv.reset_mock()
+        self.mock_subprocess_run.reset_mock()

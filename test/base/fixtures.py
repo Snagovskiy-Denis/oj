@@ -9,16 +9,17 @@ FAKE_DATE = date(2012, 12, 21)
 DATE_FORMAT = '%Y-%m-%d'
 EXTENSION = '.md'
 EDITOR = 'vi'
-FILES = TEMPLATE, DESTINATION, CONFIG = \
-            'template.md', 'destination.md', \
-            f'{APPLICATION_NAME}.ini'
 
-TEMPLATE_DATA = f'''# Header 1
-## Header 2
-Test {TEMPLATE.capitalize()} text
+TEMPLATE = 'template.md'
+DESTINATION = FAKE_DATE.isoformat() + EXTENSION
+CONFIG = f'{APPLICATION_NAME}.ini'
+FILES = TEMPLATE, DESTINATION, CONFIG
 
-- item 1
-- *item 2*
+TEMPLATE_DATA = f'''# Dear diary
+## Todays Evil scheming 
+{TEMPLATE}
 
-> some quote
+- [x] write tests for life
+- [ ] live a life
+- [ ] refactor life
 '''

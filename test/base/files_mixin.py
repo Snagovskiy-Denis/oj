@@ -76,7 +76,8 @@ class SelfCleanedFileFactory:
 
         [{FILENAME_SECTION}]
         '''  # double % = escape single %
-        return {f.TEMPLATE: template, f.CONFIG: config}
+        dest = template
+        return {f.TEMPLATE: template, f.CONFIG: config, f.DESTINATION: dest}
 
 
 class FilesMixIn:

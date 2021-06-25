@@ -119,7 +119,7 @@ class ApplicationOpenNoteTest(BaseTestCase):
 
         self.app.open_note()
 
-        mock_chdir.assert_called_once_with(destination)
+        mock_chdir.assert_called_once_with(destination.parent)
         mock_getenv.assert_called_once_with(EDITOR)
         mock_run.assert_called_once_with(
                             [mock_getenv.return_value, destination])
