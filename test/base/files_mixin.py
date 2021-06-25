@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from unittest.mock import patch
+
 import test.base.fixtures as f
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
                        DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
@@ -16,8 +18,10 @@ class SelfCleanedFile:
         self._write_file()
 
     def _write_file(self):
-        with open(self.path, 'w') as f:
-            f.write(self.data)
+        if not self._path.is_file():
+            # Path.write_text might be patched
+            with open(self._path, 'w') as f:  
+                f.write(self._data)
 
     @property
     def path(self):
@@ -32,7 +36,7 @@ class SelfCleanedFile:
         self._write_file()
 
     def __repr__(self):
-        return f'{self.path=}'
+        return f'{self.path.name=}'
 
     def __del__(self):
         if self._path.is_file():
@@ -61,12 +65,13 @@ class SelfCleanedFileFactory:
 
         template = f.TEMPLATE_DATA
         config   = f'''[{DEFAULT_SECTION}]
-        {DESTINATION} = {paths[f.DESTINATION].parent}
-        {TEMPLATE} = {paths[f.TEMPLATE]}
         {DATE_FORMAT} = %%Y-%%m-%%d
         {EXTENSION} = {f.EXTENSION}
 
         [{PATH_SECTION}]
+        {DESTINATION} = {paths[f.DESTINATION].parent}
+        {TEMPLATE} = {paths[f.TEMPLATE]}
+
         [{FILENAME_SECTION}]
         '''  # double % = escape single %
         return {f.TEMPLATE: template, f.CONFIG: config}
@@ -78,11 +83,31 @@ class FilesMixIn:
     MixIn manage files but do not manage configurations.
     Because of that we need to mock path to config later.
     '''
-
-    files_to_create = tuple[str: 'filename']()
+    required_files = tuple[str: 'filename']()
+    config_patched = False
 
     def create_files(self):
         self.files = dict()
-        if self.files_to_create:
-            factory = SelfCleanedFileFactory((self.files_to_create))
+        if self.required_files:
+            factory = SelfCleanedFileFactory(self.required_files)
             self.files = factory.produce()
+        if f.CONFIG in self.required_files:
+            self._patch_config()
+
+    def add_new_file(self, file):
+        factory = SelfCleanedFileFactory((file,))
+        self.files.update(factory.produce())
+        if file == f.CONFIG:
+            self._patch_config()
+
+    def _patch_config(self):
+        self.config_patched = True
+        self.config_path_patcher = patch(
+                'configurator.Configurator._get_config_path', 
+                return_value=self.files[f.CONFIG].path)
+        self.mock_config_path = self.config_path_patcher.start()
+
+    def delete_files(self):
+        if self.config_patched:
+            self.config_patched = False
+            self.config_path_patcher.stop()

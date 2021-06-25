@@ -12,7 +12,7 @@ BASE_DIRECTORY = Path(__file__).parent.absolute()
 TEST_DIRECTORY = BASE_DIRECTORY.joinpath('test')
 
 # Filenames
-CONFIG_FILENAME = APPLICATION_NAME + '.ini'
+CONFIG_FILENAME = f'.{APPLICATION_NAME}.ini'
 
 # Mods
 DEFAULT_MODE = 'default'

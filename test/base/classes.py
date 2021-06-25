@@ -30,9 +30,27 @@ class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
 
     Class creates test files for path-resolving functional and
     patch Configurator._get_config_path to read created config.
-    Afterwards it patchs todas date, env variables and sysargv.
+    Afterwards it patchs todas date, env variables, sysargv etc
+
+    List of patched enteties:
+
+        SystemMixIn:
+
+            * oj.chdir
+            * oj.getenv
+            * pathlib.Path.write_text
+            * subprocess.run
+            * sys.argv
+
+        FilesMixIn:
+
+            * configurator.Configurator._get_config_path
+
+        IntegratedTestCase:
+
+            * oj.date
     '''
-    files_to_create = (f.TEMPLATE, f.CONFIG)
+    required_files = (f.TEMPLATE, f.CONFIG)
 
     def setUp(self):
         self.initiate_test_environment()
@@ -46,16 +64,10 @@ class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
         self.create_fake_date_and_expected_path()
         self.isolate_from_system()
 
-        self.config_path_patcher = patch(
-                'configurator.Configurator._get_config_path', 
-                return_value=self.files[f.CONFIG].path)
-        self.mock_config_path = self.config_path_patcher.start()
-
     def clear_test_environment(self):
         self.stop_system_isolation()
-
-        self.config_path_patcher.stop()
         self.date_patcher.stop()
+        self.delete_files()
 
     def create_fake_date_and_expected_path(self):
         fake_date_str = f.FAKE_DATE.isoformat() + f.EXTENSION

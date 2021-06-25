@@ -7,6 +7,19 @@ from exceptions import SectionReadError, SettingReadError
 
 
 class Configurator:
+    '''Read, resolve and write configurations
+
+    Sections:
+
+        * DEFAULT  -- this settings is used unless another section overwrite it
+        * PATH     -- paths to required and optional files (e.g. for note creation)
+        * FILENAME -- rules for build destination path filenames part 
+
+    PATH:
+
+        * 
+    '''
+
     def __init__(self):
         self.config = ConfigParser()
 

@@ -13,15 +13,19 @@ class FunctionalTest(IntegratedTestCase):
     def assertPathsReadWriteAccessIsOK(self):
         self.assertFileExists(f.TEMPLATE)
         self.assertTrue(os.access(f.TEST_DIRECTORY, os.W_OK), 
-            "Test have not write access to directory:\n{f.TEST_DIRECTORY}")
+        "Test have not write access to directory:\n{f.TEST_DIRECTORY}")
         self.assertTrue(os.access(self.files[f.TEMPLATE].path, os.R_OK),
-            "Test have not read access on path:\n{f.TEST_DIRECTORY}")
+        "Test have not read access on path:\n{f.TEST_DIRECTORY}")
 
     def assertFileExists(self, filename: str):
         self.assertTrue(self.files[filename].path.is_file())
 
+    def assertFileDoesNotExist(self, filename: str):
+        with self.assertRaises(KeyError):
+            self.assertFileExists(filename)
+
     def assertIncludeSettings(self, expected: dict, actual: dict):
-        # self.assertDictEqual(expected | actual, expected)  # this is too ugly
+        # self.assertDictEqual(expected | actual, expected)# output is ugly
         expected, actual = [set(s.items()) for s in (expected, actual)]
         try:
             assert expected <= actual
