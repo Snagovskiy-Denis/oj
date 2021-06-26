@@ -2,10 +2,8 @@ import unittest
 from datetime import date
 from unittest.mock import patch
 
-import test.base.fixtures as f
-
-from test.base.files_mixin import FilesMixIn
-from test.base.system_mixin import SystemMixIn
+from test.base.fixture_files import FixtureFiles
+from test.base.fixture_system import FixtureSystem
 
 from oj import Application
 
@@ -15,7 +13,7 @@ class BaseTestCase(unittest.TestCase):
         self.app = Application()
 
 
-class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
+class IntegratedTestCase(FixtureFiles, FixtureSystem, BaseTestCase):
     '''Creates test environment to satisfy external dependencies
 
     List of external dependencies:
@@ -33,23 +31,22 @@ class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
 
     List of patched enteties:
 
-        SystemMixIn:
+        FixtureSystem:
 
-            * oj.chdir
-            * oj.getenv
+            * oj.chdir (os.chdir)
+            * oj.getenv (os.getenv)
             * pathlib.Path.write_text
             * subprocess.run
             * sys.argv
 
-        FilesMixIn:
+        FixtureFiles:
 
             * configurator.Configurator._get_config_path
-
-        IntegratedTestCase:
-
-            * oj.date
+            * oj.date (datetime.date)
     '''
-    required_files = (f.TEMPLATE, f.CONFIG)
+    config_file_required      = True
+    template_file_required    = True
+    destination_file_required = False
 
     def setUp(self):
         self.initiate_test_environment()
@@ -60,18 +57,8 @@ class IntegratedTestCase(FilesMixIn, SystemMixIn, BaseTestCase):
 
     def initiate_test_environment(self):
         self.create_files()
-        self.create_fake_date_and_expected_path()
         self.isolate_from_system()
 
     def clear_test_environment(self):
         self.stop_system_isolation()
-        self.date_patcher.stop()
         self.delete_files()
-
-    def create_fake_date_and_expected_path(self):
-        fake_date_str = f.FAKE_DATE.isoformat() + f.EXTENSION
-
-        self.expected_path = f.TEST_DIRECTORY.joinpath(fake_date_str)
-        self.date_patcher = patch('oj.date', 
-                **{'today.return_value': f.FAKE_DATE})
-        self.mock_date = self.date_patcher.start()

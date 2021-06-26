@@ -3,7 +3,6 @@ import unittest
 from unittest import skip
 from unittest.mock import patch
 
-import test.base.fixtures as f
 from test.base.classes import IntegratedTestCase, BaseTestCase
 
 from exceptions import SectionReadError, SettingReadError
@@ -12,9 +11,9 @@ from exceptions import SectionReadError, SettingReadError
 class ConfiguratorTest(IntegratedTestCase):
     def test_searches_config_file_in_dunder_file_directory_path(self):
         expected_settings: 'destination, date format, template' = [
-                f.TEST_DIRECTORY,
-                f.EXTENSION,
-                self.files[f.TEMPLATE].path
+                self.destination_directory,
+                '.md',
+                self.template_file.path,
         ]
 
         self.app.read_config_file()
@@ -50,7 +49,7 @@ class ConfiguratorErrorsTest(IntegratedTestCase):
             self.app.read_config_file()
 
         mock_sections.assert_called_once()
-        mock_read.assert_called_once_with(self.files[f.CONFIG].path)
+        mock_read.assert_called_once_with(self.config_file.path)
 
     def test_raises_error_if_can_not_find_section_in_config(
                 self, mock_sections

@@ -19,7 +19,7 @@ class Application:
 
     def __init__(self):
         self.configurations = dict()
-        self.destination:Path = None
+        self.destination: Path = None
         self.template = ''
         self.mode = self.DEFAULT_MODE
 

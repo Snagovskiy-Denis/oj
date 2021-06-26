@@ -4,14 +4,14 @@ from unittest import skip
 from unittest.mock import Mock, patch, call
 
 from test.base.classes import BaseTestCase, IntegratedTestCase
-import test.base.fixtures as f
+from test.base.fixture_files import TEST_DIRECTORY
 
 from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
                        DATE_FORMAT, DESTINATION, TEMPLATE, EXTENSION,
                       )
 
 
-@patch('sys.argv', [f.TEST_DIRECTORY.joinpath('oj.py')])
+@patch('sys.argv', [TEST_DIRECTORY.joinpath('oj.py')])
 class ApplicationBehaviorSelectionTest(BaseTestCase):
     def test_get_mode_with_one_sys_argument_set_DEFAULT_mode(self):
         current_mode = self.app.get_mode()
@@ -32,9 +32,9 @@ class ApplicationBehaviorSelectionTest(BaseTestCase):
 
 
 class ApplicationFilenameValidationTest(IntegratedTestCase):
-    def assertInDestinationPath(self, path_name:str):
+    def assertInDestinationPath(self, path_name: str):
         self.mock_date.today.assert_called_once()
-        expected = f.TEST_DIRECTORY.joinpath(path_name)
+        expected = self.destination_directory.joinpath(path_name)
         self.assertEqual(expected, self.app.destination)
 
     def test_builds_destination_with_filename_in_isoformat_date(self):
@@ -42,14 +42,14 @@ class ApplicationFilenameValidationTest(IntegratedTestCase):
         self.assertInDestinationPath('2012-12-21.md')
 
     def test_builds_destination_with_filename_with_custom_date_format(self):
-        self.files[f.CONFIG].replace_in_data(
+        self.config_file.replace_in_data(
                 '%%Y-%%m-%%d', '%%d.%%m.%%Y')
         self.app.build_filename()
         self.assertInDestinationPath('21.12.2012.md')
 
     @skip
     def test_is_destination_valid_with_valid_destination(self):
-        destination = f.TEST_DIRECTORY.joinpath('2012-12-21.md')
+        destination = self.destination_directory.joinpath('2012-12-21.md')
         mock_destination = Mock(return_value=destination)
         self.app.destination = mock_destination
 
@@ -58,13 +58,15 @@ class ApplicationFilenameValidationTest(IntegratedTestCase):
 
 
 class ApplicationTemplateTest(IntegratedTestCase):
+    # template_file_required = False
+
     def test_reads_template_file_if_it_exists(self):
         self.assertEqual(self.app.template, '')
         self.app.read_template_file()
-        self.assertEqual(self.app.template, self.files[f.TEMPLATE].data)
+        self.assertEqual(self.app.template, self.template_file.data)
 
     def test_raises_error_if_template_file_does_not_exist_on_path(self):
-        del self.files[f.TEMPLATE]
+        self.delete_file(self.template_file)
         with self.assertRaises(FileNotFoundError):
             self.app.read_template_file()
 
@@ -73,14 +75,15 @@ class ApplicationTemplateTest(IntegratedTestCase):
 class ApplicationWriteNewNoteTest(BaseTestCase):
     def test_writes_if_destination_path_does_not_exist(self, mock_write_text):
         template = f'{__class__.__name__} test template body'
-        self.app.destination = f.TEST_DIRECTORY.joinpath('2012-12-21.md')
+        self.app.destination = TEST_DIRECTORY.joinpath(
+                '2012-12-21.md')
         self.app.template = template
 
         self.app.create_note()
         mock_write_text.assert_called_once_with(template)
 
     def test_do_not_write_if_destination_path_exists(self, mock_write_text):
-        self.app.destination = f.TEST_DIRECTORY
+        self.app.destination = TEST_DIRECTORY
         self.app.create_note()
         self.assertEqual(self.app.get_mode(), DEFAULT_MODE)
         mock_write_text.assert_not_called()
@@ -88,7 +91,7 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
     def test_writes_if_REWRITE_mode_and_destination_path_does_not_exist(
                 self, mock_write_text
             ):
-        self.app.destination = f.NON_EXISTING_PATH
+        self.app.destination = TEST_DIRECTORY.joinpath('I_AM_A_LIE.py')
         self.app.create_note()
         mock_write_text.assert_called_once()
 
@@ -98,7 +101,7 @@ class ApplicationWriteNewNoteTest(BaseTestCase):
             ):
         template = f'{__class__.__name__} test template body'
         self.app.mode = REWRITE_MODE
-        self.app.destination = f.TEST_DIRECTORY
+        self.app.destination = TEST_DIRECTORY
         self.app.template = template
 
         self.app.create_note()
@@ -113,7 +116,7 @@ class ApplicationOpenNoteTest(BaseTestCase):
     def test_cd_to_destination_path_and_run_editor_on_note_file(
                 self, mock_getenv, mock_chdir, mock_run
             ):
-        destination = f.TEST_DIRECTORY.joinpath('2012-12-21.md')
+        destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
         self.app.destination = destination 
 
         self.app.open_note()

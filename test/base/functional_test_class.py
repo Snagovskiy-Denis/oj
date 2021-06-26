@@ -1,31 +1,30 @@
-import os
-from unittest.mock import patch
-
-import test.base.fixtures as f
-from constants import EDITOR
-
 from test.base.classes import IntegratedTestCase
+
+from constants import EDITOR
 
 
 class FunctionalTest(IntegratedTestCase):
     '''Create test environment and define new aseertion methods'''
 
-    def assertFileExists(self, filename: str):
-        self.assertTrue(self.files[filename].path.is_file())
+    def assertFileExists(self, file):
+        self.assertTrue(file.path.is_file())
 
-    def assertFileDoesNotExist(self, filename: str):
-        self.assertTrue(filename not in self.files.keys())
+    def assertFileDoesNotExist(self, path):
+        self.assertFalse(path.is_file())
 
     def assertTemplateIsWrittenOnDestination(self, template):
         self.mock_write_text.assert_called_once_with(template)
 
-    def assertFileWasOpened(self):
-        self.mock_chdir.assert_called_once_with(self.expected_path.parent)
+    def assertFileWasOpened(self, path):
+        self.mock_chdir.assert_called_once_with(path.parent)
         self.mock_getenv.assert_called_once_with(EDITOR)
         self.mock_subprocess_run.assert_called_once_with(
-            [self.mock_getenv.return_value, self.expected_path])
+            [self.mock_getenv.return_value, path])
 
-    def reset_open_note_related_mocks(self):
-        self.mock_chdir.reset_mock()
-        self.mock_getenv.reset_mock()
-        self.mock_subprocess_run.reset_mock()
+    def assertConfigFileContains(self, settings: dict):
+        for section_name, section in settings.items():
+            self.assertIn(section_name, self.config_file.data,'Miss section')
+            for setting_key, setting_value in section.items():
+                self.assertIn(f'{setting_key} = {setting_value}', 
+                                self.config_file.data,
+                                'Miss settings')
