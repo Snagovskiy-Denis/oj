@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from constants import (DEFAULT_SECTION, PATH_SECTION, FILENAME_SECTION,
         DATE_FORMAT, EXTENSION, DESTINATION, TEMPLATE)
+from configurator import Configurator
 
 
 # Default test data
@@ -42,6 +43,14 @@ TEST_DESTINATION = TEST_DESTINATION_FILENAME, TEST_DESTINATION_DATA
 TEST_FILES = TEST_CONFIG, TEST_TEMPLATE, TEST_DESTINATION
 
 
+# TODO ConfigFile(SelfCleaningTestFile) | PlainTextFile(SelfCleaningTestFile)
+# 
+# data is dict or Configurator itself for ConfigFile
+# 
+# convert_dict_to_str
+# _write_file is dict > convert_dict_to_str > _write_file
+# replace_in_data is dict.update(new_dict) > convert_dict_to_str > _write_file
+# FixtureFiles.create_config_file > convert_dict_to_str > _write_file
 class SelfCleaningTestFile:
     'Create and delete file on path with given data'
 
@@ -100,13 +109,17 @@ class FixtureFiles:
         if not self.destination_file_required: 
             self.delete_file(self.destination_file)
 
-    def create_configurations(self, date_format='%Y-%m-%d', extension='.md', 
-            destination=None, template=None):
+    def create_configurations(self, date_format='%%Y-%%m-%%d', 
+            extension='.md', destination=None, template=None):
         '''Get configurations without reading config file'''
-        dest = destination if destination else self.destination_directory 
+        dest = destination if destination else self.destination_directory
         template = template if template else self.template_file.path
-        return {DATE_FORMAT: date_format, EXTENSION: extension,
-                DESTINATION: dest, TEMPLATE: template}
+        configurator = Configurator()
+        configurator.read_dict({FILENAME_SECTION: {DATE_FORMAT: date_format,
+                                                   EXTENSION: extension},
+                                PATH_SECTION: {TEMPLATE: template,
+                                               DESTINATION: dest}})
+        return configurator
 
     def add_new_file(self, file_name, file_data) -> SelfCleaningTestFile:
         return SelfCleaningTestFile(file_name, file_data)
@@ -149,14 +162,15 @@ class FixtureFiles:
         return self.files[TEST_DESTINATION_FILENAME]
     
     def _patch_date(self):
-        self.date_patcher = patch('oj.date', 
-                **{'today.return_value': FAKE_DATE})
+        config = {'today.return_value': FAKE_DATE}
+        self.date_patcher = patch('oj.date', **config)
         self.mock_date = self.date_patcher.start()
 
     def _patch_config_path(self):
+        '''Search config file on given path only and do not validate path'''
         self.config_path_patcher = patch(
                 'configurator.Configurator._get_config_path', 
-                return_value=self.files[TEST_CONFIG_FILENAME].path)
+                return_value=self.config_file.path)
         self.mock_config_path = self.config_path_patcher.start()
 
     def delete_files(self):

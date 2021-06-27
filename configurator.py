@@ -1,8 +1,8 @@
-from configparser import ConfigParser
+from configparser import ConfigParser, NoSectionError
 from pathlib import Path
 
 from constants import (PATH_SETTINGS, FILENAME_SETTINGS, ALL_SETTINGS, 
-        CONFIG_PATH)
+        APPLICATION_NAME, FILENAME_SECTION, PATH_SECTION)
 from exceptions import SectionReadError, SettingReadError
 
 
@@ -41,31 +41,49 @@ class Configurator(ConfigParser):
         date format = %%Y-%%m-%%d
         extension   = .md
     '''
+    # TODO move settings hierarchy to this file
+
+    def __init__(self):
+        # ConfigParser __init__ defaults attr does not work so...
+        super().__init__()
+        self._set_defaults()
+
+    def getpath(self, option, section=PATH_SECTION) -> Path:
+        option = self.get(section, option)
+        return Path(option).absolute()
+
     def read(self) -> dict():
         super().read(self._get_config_path())
-
-        sections = self.sections()
-        if not sections:
+        if not self.sections():
             raise ValueError('Config file is empty')
+        return self
 
-        configurations = dict()
-        for section, section_settings in zip(sections, ALL_SETTINGS):
-            if not self.has_section(section):
-                raise SectionReadError(section)
-
-            for setting in section_settings:
-                if not self.get(section, setting, fallback=None):
-                    raise SettingReadError(setting)
-
-                value = self[section][setting]
-                if setting in PATH_SETTINGS:
-                    value = Path(value)
-                configurations[setting] = value
-        return configurations
+    def _set_defaults(self):
+        # TODO: dict_read
+        # defaults:
+        #     * date format = %%Y-%%m-%%d
+        #     * extension   = .md
+        #     * config path = {path to .config plus 'oj.ini'}
+        #     * destination = {$PWD env var}
+        #     * template    = ''
+        #
+        #     [OPEN]
+        #     * use EDITOR  = {boolean}
+        #     * use VISUAL  = {boolean}
+        #     * 
+        #     * editor name = # will be used if EDITOR and VISUAL are false
+        #     * 
+        # 
+        pass
 
     def _get_config_path(self):
-        path = CONFIG_PATH
+        file_name = f'{APPLICATION_NAME}.ini'
+        path = Path().home().joinpath('.config', file_name)
         if not path.is_file():
+            # TODO warnings.warn(UserWarning('Defaults will be used...'))
+            # time.sleep(3)
+            # do not raise
+            # Disable this warning if valid sys argument provided
             raise FileNotFoundError('Config file not found on path:\n\n' \
                     f'{path=}')
-        return str(path)
+        return path

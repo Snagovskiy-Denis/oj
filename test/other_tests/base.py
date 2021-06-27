@@ -18,16 +18,12 @@ class ConfiguratorTestCase(FixtureFiles, TestCase):
     def tearDown(self):
         self.delete_files()
 
-    def assertIncludeSettings(self, expected: dict, actual: dict):
-        # self.assertDictEqual(expected | actual, expected)  # output is ugly
-        expected, actual = [set(s.items()) for s in (expected, actual)]
-        try:
-            assert expected <= actual
-        except AssertionError as e:
-            message = 'These settings: "{}" are not in the actual: {}'
-            missing = dict(expected - actual)
-            e.args += (message.format(missing, actual),)
-            raise
+    def assertIncludeSettings(self, expected, actual):
+        for section in expected.sections():
+            for option in expected.options(section):
+                actual_option = actual.get(section, option)
+                expected_option = expected[section][option]
+                self.assertEqual(expected_option, actual_option)
 
 
 class BaseApplicationTestCase(TestCase):

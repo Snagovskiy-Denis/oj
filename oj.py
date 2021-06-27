@@ -15,27 +15,35 @@ class Application:
     '''Controls scripts commands flow'''
 
     def __init__(self):
-        self.configurations = dict()
+        self.configurator = Configurator()
         self.destination: Path = None
-        self.template = ''
+        self.template: str = ''
         self.mode = DEFAULT_MODE
 
     def get_mode(self) -> str:
+        # Plan:
+        #   * rewrite = delete old file 
+        #   * append  = if file already exists (e.g. reminder) append to in
+        #   * option  = set option for this run
+        #               e.g. 1 template path to run without config file at all
+        #               e.g. 2 config path instead of standart one
+        #   * 
         return self.mode
 
     def read_config_file(self):
-        self.configurations = Configurator().read()
+        self.configurator.read()
 
     def build_filename(self):
         today = date.today()
-        date_format = self.configurations[DATE_FORMAT]
-        extension = self.configurations[EXTENSION]
+        date_format = self.configurator.get('FILENAME', DATE_FORMAT)
+        extension = self.configurator.get('FILENAME', EXTENSION)
         filename = today.strftime(date_format) + extension
+        destination = self.configurator.getpath(DESTINATION)
 
-        self.destination = self.configurations[DESTINATION].joinpath(filename)
+        self.destination = destination.joinpath(filename)
 
     def read_template_file(self):
-        self.template = self.configurations[TEMPLATE].read_text()
+        self.template = self.configurator.getpath(TEMPLATE).read_text()
 
     def create_note(self):
         if self.get_mode() == REWRITE_MODE or not self.destination.exists():
@@ -50,7 +58,6 @@ class Application:
 
     def run(self):
         # TODO import argparse
-        # create default config file (from Configurator.__doc__) if sys args
         self.read_config_file()
         self.build_filename()
         self.read_template_file()
@@ -59,4 +66,5 @@ class Application:
 
 
 if __name__ == '__main__':
+    # TODO: default settings + argparse + alter template for holidays = v1.0.0
     Application().run()

@@ -1,9 +1,4 @@
 '''Non-configurable values'''
-
-from os import getenv
-from pathlib import Path
-
-
 # General
 APPLICATION_NAME = 'oj'
 EDITOR = 'EDITOR'  # environment variable
@@ -13,9 +8,6 @@ DEFAULT_MODE = 'default'
 REWRITE_MODE = 'rewrite'
 
 # Config
-CONFIG_FILENAME = f'{APPLICATION_NAME}.ini'
-CONFIG_PATH = Path(getenv('HOME')).joinpath('.config', CONFIG_FILENAME)
-
 ## Sections
 DEFAULT_SECTION = 'DEFAULT'
 PATH_SECTION = 'PATH'

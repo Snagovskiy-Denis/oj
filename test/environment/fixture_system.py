@@ -16,8 +16,6 @@ class FixtureSystem:
         * processes running
     '''
     def isolate_from_system(self):
-        # TODO for entity, config in ...: patch(entity, **config)
-        #       empty dict as config is valid
         self.getenv_patcher = patch('oj.getenv', return_value='vi')
         self.sys_argv_patcher = patch('sys.argv', 
                 [TEST_DIRECTORY.parent.joinpath('oj.py')])
