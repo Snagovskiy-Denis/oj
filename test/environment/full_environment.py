@@ -1,19 +1,8 @@
-import unittest
-from datetime import date
-from unittest.mock import patch
-
-from test.base.fixture_files import FixtureFiles
-from test.base.fixture_system import FixtureSystem
-
-from oj import Application
+from .fixture_files  import FixtureFiles
+from .fixture_system import FixtureSystem
 
 
-class BaseTestCase(unittest.TestCase):
-    def setUp(self):
-        self.app = Application()
-
-
-class IntegratedTestCase(FixtureFiles, FixtureSystem, BaseTestCase):
+class TestEnvironment(FixtureFiles, FixtureSystem):
     '''Creates test environment to satisfy external dependencies
 
     List of external dependencies:
@@ -47,13 +36,6 @@ class IntegratedTestCase(FixtureFiles, FixtureSystem, BaseTestCase):
     config_file_required      = True
     template_file_required    = True
     destination_file_required = False
-
-    def setUp(self):
-        self.initiate_test_environment()
-        super().setUp()
-
-    def tearDown(self):
-        self.clear_test_environment()
 
     def initiate_test_environment(self):
         self.create_files()

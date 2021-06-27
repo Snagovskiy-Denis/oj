@@ -1,10 +1,19 @@
-from test.base.classes import IntegratedTestCase
+from unittest import TestCase
 
-from constants import EDITOR
+from test.environment.full_environment import TestEnvironment
+
+from oj import Application
 
 
-class FunctionalTest(IntegratedTestCase):
+class FunctionalTest(TestEnvironment, TestCase):
     '''Create test environment and define new aseertion methods'''
+
+    def setUp(self):
+        self.app = Application()
+        self.initiate_test_environment()
+
+    def tearDown(self):
+        self.clear_test_environment()
 
     def assertFileExists(self, file):
         self.assertTrue(file.path.is_file())
@@ -14,12 +23,6 @@ class FunctionalTest(IntegratedTestCase):
 
     def assertTemplateIsWrittenOnDestination(self, template):
         self.mock_write_text.assert_called_once_with(template)
-
-    def assertFileWasOpened(self, path):
-        self.mock_chdir.assert_called_once_with(path.parent)
-        self.mock_getenv.assert_called_once_with(EDITOR)
-        self.mock_subprocess_run.assert_called_once_with(
-            [self.mock_getenv.return_value, path])
 
     def assertConfigFileContains(self, settings: dict):
         for section_name, section in settings.items():

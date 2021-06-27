@@ -1,8 +1,8 @@
 from unittest.mock import patch
 
-from test.base.fixture_files import TEST_DIRECTORY
+from .fixture_files import TEST_DIRECTORY
 
-from oj import Application
+from constants import EDITOR
 
 
 class FixtureSystem:
@@ -37,3 +37,9 @@ class FixtureSystem:
         self.write_text_patcher.stop()
         self.chdir_patcher.stop() 
         self.subprocess_run_patcher.stop()
+
+    def assertFileWasOpened(self, path):
+        self.mock_chdir.assert_called_once_with(path.parent)
+        self.mock_getenv.assert_called_once_with(EDITOR)
+        self.mock_subprocess_run.assert_called_once_with(
+            [self.mock_getenv.return_value, path])

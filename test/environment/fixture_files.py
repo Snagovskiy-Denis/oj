@@ -100,6 +100,14 @@ class FixtureFiles:
         if not self.destination_file_required: 
             self.delete_file(self.destination_file)
 
+    def create_configurations(self, date_format='%Y-%m-%d', extension='.md', 
+            destination=None, template=None):
+        '''Get configurations without reading config file'''
+        dest = destination if destination else self.destination_directory 
+        template = template if template else self.template_file.path
+        return {DATE_FORMAT: date_format, EXTENSION: extension,
+                DESTINATION: dest, TEMPLATE: template}
+
     def add_new_file(self, file_name, file_data) -> SelfCleaningTestFile:
         return SelfCleaningTestFile(file_name, file_data)
     

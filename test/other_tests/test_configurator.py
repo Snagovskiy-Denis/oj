@@ -3,32 +3,29 @@ import unittest
 from unittest import skip
 from unittest.mock import patch
 
-from test.base.classes import IntegratedTestCase, BaseTestCase
+from .base import ConfiguratorTestCase
 
 from exceptions import SectionReadError, SettingReadError
 
 
-class ConfiguratorTest(IntegratedTestCase):
+class ConfiguratorTest(ConfiguratorTestCase):
     def test_searches_config_file_in_dunder_file_directory_path(self):
-        expected_settings: 'destination, date format, template' = [
-                self.destination_directory,
-                '.md',
-                self.template_file.path,
-        ]
-
-        self.app.read_config_file()
-        actual_settings = self.app.configurations
-
-        for setting in expected_settings:
-            self.assertIn(setting, actual_settings.values())
+        expected = self.create_configurations()
+        self.assertIncludeSettings(expected, self.configurator.read())
 
     @skip
     def test_converts_path_settings_from_str_to_Path_class(self):
         pass
 
+    @skip
+    def test_raises_error_if_cannot_convert_path_setting_from_string_to_Path(
+            self, mock_sections):
+        self.fail('Expected failure')
+
 
 @patch('configparser.ConfigParser.sections', return_value=['foo'])
-class ConfiguratorErrorsTest(IntegratedTestCase):
+class ConfiguratorErrorsTest(ConfiguratorTestCase):
+
     @patch('pathlib.Path.is_file', return_value=False)
     def test_raises_error_if_config_not_found(
                 self, mock_is_file, mock_sections
@@ -36,7 +33,7 @@ class ConfiguratorErrorsTest(IntegratedTestCase):
         self.config_path_patcher.stop()
 
         with self.assertRaises(FileNotFoundError):
-            self.app.read_config_file()
+            self.configurator.read()
 
         mock_is_file.assert_called_once()
         mock_sections.assert_not_called()
@@ -46,7 +43,7 @@ class ConfiguratorErrorsTest(IntegratedTestCase):
         mock_sections.return_value = []
 
         with self.assertRaises(ValueError):
-            self.app.read_config_file()
+            self.configurator.read()
 
         mock_sections.assert_called_once()
         mock_read.assert_called_once_with(self.config_file.path)
@@ -55,7 +52,7 @@ class ConfiguratorErrorsTest(IntegratedTestCase):
                 self, mock_sections
             ):
         with self.assertRaises(SectionReadError):
-            self.app.read_config_file()
+            self.configurator.read()
 
         mock_sections.assert_called_once()
 
@@ -64,12 +61,18 @@ class ConfiguratorErrorsTest(IntegratedTestCase):
                 self, mock_has_section, mock_sections
             ):
         with self.assertRaises(SettingReadError):
-            self.app.read_config_file()
+            self.configurator.read()
 
         sections = mock_sections.return_value
 
         mock_has_section.assert_called_once_with(sections[0])
         mock_sections.assert_called_once()
+
+    @skip
+    def test_raises_error_if_required_setting_is_missed_in_config_file(
+            self, mock_sections):
+        self.fail('Expected failure')
+
 
 
 if __name__ == '__main__':

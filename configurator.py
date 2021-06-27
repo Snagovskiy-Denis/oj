@@ -6,7 +6,7 @@ from constants import (PATH_SETTINGS, FILENAME_SETTINGS, ALL_SETTINGS,
 from exceptions import SectionReadError, SettingReadError
 
 
-class Configurator:
+class Configurator(ConfigParser):
     '''Read, resolve and write configurations
 
     Sections:
@@ -41,28 +41,23 @@ class Configurator:
         date format = %%Y-%%m-%%d
         extension   = .md
     '''
+    def read(self) -> dict():
+        super().read(self._get_config_path())
 
-    def __init__(self):
-        # class Configuratori(ConfigParser) ?
-        self.config = ConfigParser()
-
-    def read_config(self) -> dict():
-        configurations = dict()
-        self.config.read(self._get_config_path())
-
-        sections = self.config.sections()
+        sections = self.sections()
         if not sections:
             raise ValueError('Config file is empty')
 
+        configurations = dict()
         for section, section_settings in zip(sections, ALL_SETTINGS):
-            if not self.config.has_section(section):
+            if not self.has_section(section):
                 raise SectionReadError(section)
 
             for setting in section_settings:
-                if not self.config.get(section, setting, fallback=None):
+                if not self.get(section, setting, fallback=None):
                     raise SettingReadError(setting)
 
-                value = self.config[section][setting]
+                value = self[section][setting]
                 if setting in PATH_SETTINGS:
                     value = Path(value)
                 configurations[setting] = value

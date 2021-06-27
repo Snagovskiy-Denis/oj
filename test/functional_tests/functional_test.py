@@ -1,20 +1,15 @@
-import os
 import unittest
 from pathlib import Path
 from unittest import skip
-from unittest.mock import patch
 
-from test.base.functional_test_class import FunctionalTest
+from .base import FunctionalTest
 
 from constants import (DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION, 
         FILENAME_SECTION, PATH_SECTION)
 
-from configurator import Configurator
-
 
 class FirstRunTest(FunctionalTest):
-    config_file_required      = False
-    # destination_file_required = False
+    config_file_required = False
 
     def test_run_with_valid_settings_creates_new_note(self):
         # John has downloaded oj
@@ -22,9 +17,7 @@ class FirstRunTest(FunctionalTest):
         self.assertFileExists(self.template_file)
 
         # John checks documentation and finds that he needs config file 
-        # TODO assert 'Required settings are:' in Configurator.__doc__
         # 
-
         # He writes new config file with valid settings:
         #   * path to directory where he wants to store his notes
         #   * path to template file for new notes
