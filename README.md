@@ -24,7 +24,7 @@ template    = /home/johndoe/notes/daily_note_template.md
 [FILENAME]
 # ISO 8601 format
 # double % escapes single %
-date format = %%Y-%%m-%%d
+date_format = %%Y-%%m-%%d
 extension   = .md
 ```
 3. Run script 

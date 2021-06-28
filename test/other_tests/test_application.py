@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch, call
 from .base import BaseApplicationTestCase, IntegratedApplicationTestCase
 from test.environment.fixture_files import TEST_DIRECTORY
 
-from constants import DEFAULT_MODE, REWRITE_MODE, EDITOR
+from oj import DEFAULT_MODE, REWRITE_MODE, EDITOR
 
 
 @patch('sys.argv', [TEST_DIRECTORY.joinpath('oj.py')])

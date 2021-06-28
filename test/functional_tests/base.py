@@ -24,10 +24,9 @@ class FunctionalTest(TestEnvironment, TestCase):
     def assertTemplateIsWrittenOnDestination(self, template):
         self.mock_write_text.assert_called_once_with(template)
 
-    def assertConfigFileContains(self, settings: dict):
-        for section_name, section in settings.items():
-            self.assertIn(section_name, self.config_file.data,'Miss section')
-            for setting_key, setting_value in section.items():
-                self.assertIn(f'{setting_key} = {setting_value}', 
-                                self.config_file.data,
-                                'Miss settings')
+    def assertIncludeSettings(self, expected, actual):
+        for section in expected.sections():
+            for option in expected.options(section):
+                actual_option = actual.get(section, option)
+                expected_option = expected[section][option]
+                self.assertEqual(expected_option, actual_option)

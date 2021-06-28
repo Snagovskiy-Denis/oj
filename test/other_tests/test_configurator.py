@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 
 from .base import ConfiguratorTestCase
 
-from constants import DESTINATION
+from configurator import DESTINATION
 
 
 class ValidConfigFileTestCase(ConfiguratorTestCase):
@@ -24,7 +24,7 @@ class ValidConfigFileTestCase(ConfiguratorTestCase):
 
     def test_converts_path_section_options_from_str_to_Path(self):
         settings = self.configurator.read()
-        path = settings.getpath(DESTINATION)
+        path = settings.get_path(DESTINATION)
 
         self.assertIsInstance(path, Path)
         self.assertEqual(path, self.destination_directory)

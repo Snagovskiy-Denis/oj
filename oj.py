@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
+from datetime import date
 from os import getenv, chdir
 from pathlib import Path
-from datetime import date
 import subprocess
 
-from constants import (DEFAULT_MODE, REWRITE_MODE, EDITOR,
-                       EXTENSION, DESTINATION, DATE_FORMAT, TEMPLATE,
-                      )
-
+from configurator import EXTENSION, DESTINATION, DATE_FORMAT, TEMPLATE
 from configurator import Configurator
+
+
+EDITOR = 'EDITOR'  # environment variable
+
+DEFAULT_MODE = 'default'
+REWRITE_MODE = 'rewrite'
 
 
 class Application:
@@ -34,16 +37,15 @@ class Application:
         self.configurator.read()
 
     def build_filename(self):
-        today = date.today()
-        date_format = self.configurator.get('FILENAME', DATE_FORMAT)
-        extension = self.configurator.get('FILENAME', EXTENSION)
-        filename = today.strftime(date_format) + extension
-        destination = self.configurator.getpath(DESTINATION)
+        date_format = self.configurator.get_in_filename(DATE_FORMAT)
+        extension   = self.configurator.get_in_filename(EXTENSION)
+        destination = self.configurator.get_path(DESTINATION)
+        filename    = date.today().strftime(date_format) + extension
 
         self.destination = destination.joinpath(filename)
 
     def read_template_file(self):
-        self.template = self.configurator.getpath(TEMPLATE).read_text()
+        self.template = self.configurator.get_path(TEMPLATE).read_text()
 
     def create_note(self):
         if self.get_mode() == REWRITE_MODE or not self.destination.exists():

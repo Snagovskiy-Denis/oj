@@ -4,12 +4,12 @@ from unittest import skip
 
 from .base import FunctionalTest
 
-from constants import (DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION, 
-        FILENAME_SECTION, PATH_SECTION)
+from configurator import DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION
 
 
 class FirstRunTest(FunctionalTest):
-    config_file_required = False
+    config_file_required   = False
+    template_file_required = True
 
     def test_run_with_valid_settings_creates_new_note(self):
         # John has downloaded oj
@@ -23,21 +23,17 @@ class FirstRunTest(FunctionalTest):
         #   * path to template file for new notes
         #   * ISO 8601 as desired date format
         #   * markdown extension
-        john_settings = {
-                PATH_SECTION: {
-                    DESTINATION: Path(__file__).parent.parent,
-                    TEMPLATE: self.template_file.path,
-                },
-
-                FILENAME_SECTION: {
-                    DATE_FORMAT: '%%Y-%%m-%%d',
-                    EXTENSION: '.md'
-                },
+        raw_john_settings = {
+                DESTINATION: Path(__file__).parent.parent,
+                TEMPLATE: self.template_file.path,
+                DATE_FORMAT: '%%Y-%%m-%%d',  # for dict unpack
+                EXTENSION: '.md'
         }
+        john_settings = self.create_configurations(**raw_john_settings)
         self.create_config_file(john_settings)
 
         self.assertFileExists(self.config_file)
-        self.assertConfigFileContains(john_settings)
+        self.assertIncludeSettings(john_settings, self.config_file._data)
 
         # John runs oj
         self.app.run()
@@ -48,7 +44,7 @@ class FirstRunTest(FunctionalTest):
         #   * oj wrote John template text into note
         #   * note content is copy of his template file content
         file_name = '2012-12-21.md'
-        destination = john_settings[PATH_SECTION][DESTINATION].joinpath(
+        destination = raw_john_settings[DESTINATION].joinpath(
                                                                 file_name)
         self.assertEqual(destination, self.app.destination)
         self.assertEqual(destination.name, self.app.destination.name)
@@ -61,6 +57,7 @@ class FirstRunTest(FunctionalTest):
 
 
 class OpenCreatedNoteTest(FunctionalTest):
+    config_file_required      = True
     destination_file_required = True
 
     def test_run_with_existing_note_opens_it_without_overwriting_it(self):
@@ -72,6 +69,7 @@ class OpenCreatedNoteTest(FunctionalTest):
         # He was being editing his new note when he accidentally closed it
         self.destination_file.replace_in_data(template, 'I am John and I')
         edited_note = self.destination_file.data
+        self.assertIn('I am John and I', edited_note)
         self.assertNotEqual(edited_note, note)
 
         # John starts oj again and finds that his note is not overwritten

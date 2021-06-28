@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from .fixture_files import TEST_DIRECTORY
 
-from constants import EDITOR
+from oj import EDITOR
 
 
 class FixtureSystem:
