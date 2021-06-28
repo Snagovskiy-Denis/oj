@@ -139,6 +139,8 @@ class FixtureFiles:
     def create_config_file(self, data: Configurator = None):
         if not data:
             data = self.create_configurations()
+        elif isinstance(data, dict):
+            data = self.create_configurations(**data)
         self.files[TEST_CONFIG_FILENAME] = ConfigTestFile(
                 TEST_CONFIG_FILENAME, data)
 

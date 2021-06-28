@@ -36,8 +36,8 @@ class FixtureSystem:
         self.chdir_patcher.stop() 
         self.subprocess_run_patcher.stop()
 
-    def assertFileWasOpened(self, path):
+    def assertFileWasOpened(self, path, editor: str = EDITOR):
         self.mock_chdir.assert_called_once_with(path.parent)
-        self.mock_getenv.assert_called_once_with(EDITOR)
+        self.mock_getenv.assert_called_once_with(editor)
         self.mock_subprocess_run.assert_called_once_with(
             [self.mock_getenv.return_value, path])

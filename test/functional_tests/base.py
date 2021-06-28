@@ -25,6 +25,9 @@ class FunctionalTest(TestEnvironment, TestCase):
         self.mock_write_text.assert_called_once_with(template)
 
     def assertIncludeSettings(self, expected, actual):
+        if isinstance(expected, dict):
+            expected = self.create_configurations(**expected)
+
         for section in expected.sections():
             for option in expected.options(section):
                 actual_option = actual.get(section, option)
