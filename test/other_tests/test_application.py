@@ -43,22 +43,22 @@ class FilenameValidationTest(IntegratedApplicationTestCase):
 
 
 class ApplicationTemplateTest(IntegratedApplicationTestCase):
+    config_file_required = False
+
     def test_reads_template_file_if_it_exists(self):
-        self.app.template = ''
         self.app.configurator = self.create_configurations(
             template=self.template_file.path)
+        self.app.read_template_file()
+        self.assertEqual(self.app.template, self.template_file.data)
+
+    def test_return_empty_string_if_can_not_find_template_file(self):
+        self.app.configurator = self.create_configurations(
+            template='')
+        self.delete_file(self.template_file)
 
         self.app.read_template_file()
 
-        self.assertEqual(self.app.template, self.template_file.data)
-
-    def test_raises_error_if_template_file_does_not_exist_on_path(self):
-        self.app.configurator = self.create_configurations(
-            template=self.template_file.path)
-        self.delete_file(self.template_file)
-
-        with self.assertRaises(FileNotFoundError):
-            self.app.read_template_file()
+        self.assertEqual(self.app.template, '')
 
 
 @patch('pathlib.Path.write_text')

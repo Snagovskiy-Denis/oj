@@ -21,10 +21,10 @@ TEST_TEMPLATE_PATH        = TEST_DIRECTORY.joinpath(TEST_TEMPLATE_FILENAME)
 TEST_DESTINATION_PATH     = TEST_DIRECTORY
 
 TEST_CONFIG_DATA = {
+                 EXTENSION: '.md',
                DATE_FORMAT: '%%Y-%%m-%%d', 
-               EXTENSION  : '.md',
                DESTINATION: TEST_DESTINATION_PATH,
-               TEMPLATE   : TEST_TEMPLATE_PATH,
+                  TEMPLATE: TEST_TEMPLATE_PATH,
 }
 TEST_TEMPLATE_DATA = f'''# Dear diary
 ## Todays Evil scheming 
@@ -120,18 +120,19 @@ class FixtureFiles:
     def create_configurations(self, date_format='%%Y-%%m-%%d', 
             extension='.md', destination=None, template=None):
         '''Get configurations without reading config file'''
-        destination  = destination if destination else TEST_DESTINATION_PATH
-        template     = template    if template    else TEST_TEMPLATE_PATH
+        d = destination if destination is not None else TEST_DESTINATION_PATH
+        t = template    if template    is not None else TEST_TEMPLATE_PATH
         configurator = Configurator()
         configurator.read_dict({
+
             FILENAME_SECTION: {
                                 DATE_FORMAT: date_format,
                                 EXTENSION: extension,
                               },
 
             PATH_SECTION:     {
-                                TEMPLATE: template,
-                                DESTINATION: destination,
+                                TEMPLATE: t,
+                                DESTINATION: d,
                               },
         })
         return configurator

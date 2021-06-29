@@ -19,6 +19,10 @@ class ConfiguratorTestCase(FixtureFiles, TestCase):
         self.delete_files()
 
     def assertIncludeSettings(self, expected, actual):
+        # TODO method offenses DRY with functional_tests/base.py
+        if isinstance(expected, dict):
+            expected = self.create_configurations(**expected)
+
         for section in expected.sections():
             for option in expected.options(section):
                 actual_option = actual.get(section, option)

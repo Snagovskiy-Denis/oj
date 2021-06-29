@@ -27,9 +27,11 @@ class Application:
         # Plan:
         #   * rewrite = delete old file 
         #   * append  = if file already exists (e.g. reminder) append to in
-        #   * option  = set option for this run
+        #   * options = print all options and exit
+        #   * option  = set option for this run exclusively
         #               e.g. 1 template path to run without config file at all
         #               e.g. 2 config path instead of standart one
+        #   * help    = print help message and exit
         #   * 
         return self.mode
 
@@ -45,7 +47,10 @@ class Application:
         self.destination = destination.joinpath(filename)
 
     def read_template_file(self):
-        self.template = self.configurator.get_path(TEMPLATE).read_text()
+        self.template = ''
+        path = self.configurator.get_path(TEMPLATE)
+        if path.is_file():
+            self.template = path.read_text()
 
     def create_note(self):
         if self.get_mode() == REWRITE_MODE or not self.destination.exists():
