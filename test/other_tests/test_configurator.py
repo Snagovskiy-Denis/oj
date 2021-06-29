@@ -61,6 +61,15 @@ class NoConfigFileTestCase(ConfiguratorTestCase):
         wait_time = int(DEFAULTS['DEFAULT']['wait'])
         mock_sleep.assert_called_once_with(wait_time)
 
+    def test_skip_warning_message_if_skip_parametr(self, mock_is_file):
+        try:
+            with patch('time.sleep'), self.assertWarns(UserWarning) as w:
+                    self.configurator.read(skip=True)
+        except AssertionError:
+            pass  # should not raise
+        else:
+            self.fail('Warning message is not skipped')
+
     def test_use_PWD_directory_as_distanation_path(self, mock_is_file):
         self.config_path_patcher.start()
         self.configurator.read()

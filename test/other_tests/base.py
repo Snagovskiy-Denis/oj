@@ -1,10 +1,12 @@
 from unittest import TestCase
+from unittest.mock import Mock
 
 from test.environment.fixture_files    import FixtureFiles
 from test.environment.full_environment import TestEnvironment
 
 from configurator import Configurator
 from oj import Application
+from cli import Parser
 
 
 class ConfiguratorTestCase(FixtureFiles, TestCase):
@@ -43,3 +45,8 @@ class IntegratedApplicationTestCase(TestEnvironment, TestCase):
     def tearDown(self):
         self.clear_test_environment()
 
+
+class CLIParserTestCase(TestCase):
+    def setUp(self):
+        self.mock_app = Mock()
+        self.cli = Parser(self.mock_app)

@@ -103,15 +103,15 @@ class Configurator(ConfigParser):
         '''Shortcut for getting option from filename section'''
         return self.get(FILENAME_SECTION, option)
 
-    def read(self) -> dict():
-        super().read(self._get_config_path())
+    def read(self, skip=False) -> dict():
+        super().read(self._get_config_path(skip))
         return self
 
-    def _get_config_path(self):
+    def _get_config_path(self, skip=False):
         '''Validate config file path'''
         file_name = f'{APPLICATION_NAME}.ini'
         path = self.get_path(CONFIG_DIRECTORY).joinpath(file_name)
-        if not path.is_file():
+        if not path.is_file() and not skip:
             path = ''
 
             message = f'''
@@ -123,10 +123,9 @@ class Configurator(ConfigParser):
             Press <Ctrl+C> if you do not want default run.
             If you do then just wait.
 
-            Use ?? wait=0 flag to skip this message next time
+            Use --skip flag option to skip this message next time
 
             '''
-            # TODO: add flag instead of '??' to warn message
             warnings.warn(UserWarning(message))
 
             wait_time = self.getint('DEFAULT', 'wait')

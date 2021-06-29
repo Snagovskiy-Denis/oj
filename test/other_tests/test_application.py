@@ -1,26 +1,10 @@
-import sys
-import unittest
-from unittest import skip
-from unittest.mock import Mock, patch, call
+from unittest import main
+from unittest.mock import patch
 
 from .base import BaseApplicationTestCase, IntegratedApplicationTestCase
 from test.environment.fixture_files import TEST_DIRECTORY
 
 from oj import DEFAULT_MODE, REWRITE_MODE, EDITOR
-
-
-@patch('sys.argv', [TEST_DIRECTORY.joinpath('oj.py')])
-class BehaviorSelectionTest(BaseApplicationTestCase):
-    def test_get_mode_with_one_sys_argument_set_DEFAULT_mode(self):
-        current_mode = self.app.get_mode()
-        self.assertEqual(DEFAULT_MODE, current_mode)
-
-    def test_remember_mode_if_number_of_sys_arguments_changed(self):
-        initial_mode = self.app.get_mode()
-
-        sys.argv = [sys.argv[0]] * 5
-        current_mode = self.app.get_mode()
-        self.assertEqual(initial_mode, current_mode)
 
 
 class FilenameValidationTest(IntegratedApplicationTestCase):
@@ -122,4 +106,4 @@ class ApplicationOpenNoteTest(IntegratedApplicationTestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

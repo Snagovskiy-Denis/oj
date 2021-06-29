@@ -3,9 +3,11 @@ from datetime import date
 from os import getenv, chdir
 from pathlib import Path
 import subprocess
+import sys
 
 from configurator import EXTENSION, DESTINATION, DATE_FORMAT, TEMPLATE
 from configurator import Configurator
+from cli import Parser
 
 
 EDITOR = 'EDITOR'  # environment variable
@@ -18,6 +20,8 @@ class Application:
     '''Controls scripts commands flow'''
 
     def __init__(self):
+        self.cli = Parser(self, prog='oj',
+                description='Daily note manager for Console Dwellers')
         self.configurator = Configurator()
         self.destination: Path = None
         self.template: str = ''
@@ -31,12 +35,16 @@ class Application:
         #   * option  = set option for this run exclusively
         #               e.g. 1 template path to run without config file at all
         #               e.g. 2 config path instead of standart one
-        #   * help    = print help message and exit
+        #   * date    = set today's date to given one
+        #               by default parsed in format of date_format option
         #   * 
         return self.mode
 
+    def parse_system_arguments(self):
+        self.cli = self.cli.parse_args(sys.argv[1:])
+
     def read_config_file(self):
-        self.configurator.read()
+        self.configurator.read(skip=self.cli.skip)
 
     def build_filename(self):
         date_format = self.configurator.get_in_filename(DATE_FORMAT)
@@ -64,7 +72,7 @@ class Application:
         subprocess.run([editor, self.destination])
 
     def run(self):
-        # TODO import argparse
+        self.parse_system_arguments()
         self.read_config_file()
         self.build_filename()
         self.read_template_file()
@@ -74,4 +82,5 @@ class Application:
 
 if __name__ == '__main__':
     # TODO: default settings + argparse + alter template for holidays = v1.0.0
+    # TODO REAMDE > usage without config with args
     Application().run()

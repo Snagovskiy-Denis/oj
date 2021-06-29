@@ -1,5 +1,5 @@
 # whatis oj
-Simple configurable script for managing daily notes.
+Daily note manager for Console Dwellers
 
 ## What does it do specifically
 1. On run:
