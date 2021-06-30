@@ -1,9 +1,12 @@
-from unittest import main
+from datetime import date
 from pathlib  import Path
+from unittest import main
+from unittest.mock import patch, MagicMock
 
 from .base import FunctionalTest
 
-from configurator import DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION
+from configurator import (DESTINATION, TEMPLATE, DATE_FORMAT, EXTENSION,
+        HOLIDAY_TEMPLATE, HOLIDAY_FEATURE)
 
 
 class CreateNewNote(FunctionalTest):
@@ -77,3 +80,28 @@ class OpenCreatedNoteTest(FunctionalTest):
         self.mock_write_text.assert_not_called()
         self.assertEqual(note_after_new_run, edited_note)
         self.assertFileWasOpened(self.destination_file.path)
+
+
+class HolidayNote(FunctionalTest):
+    def test_expand_template_if_today_is_holiday(self):
+        self.mock_date.today.return_value = MagicMock(spec=date, 
+                **{'weekday.return_value': 5})  # today is a holiday
+        # John likes to do week review of his live
+        # He even created additional mini-template for this purpose
+        # He wants to expand his daily template by this one for st and sn
+        initial_template = self.template_file.data
+
+        extra_path = self.config_file.path  # don't want to create another
+        extra_template = f'{HOLIDAY_TEMPLATE}={str(extra_path)}'
+        feature_on = f'{HOLIDAY_FEATURE}=1'
+        args = [__file__, '-o', extra_template, feature_on]
+        with patch('sys.argv', args):
+            self.app.run()
+
+        expanded_template = self.app.template
+
+        self.assertNotEqual(initial_template, expanded_template)
+
+
+if __name__ == '__main__':
+    main()

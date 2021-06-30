@@ -1,10 +1,11 @@
 from pathlib import Path
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from configurator import Configurator
-from configurator import (PATH_SECTION, FILENAME_SECTION,
-        DATE_FORMAT, EXTENSION, DESTINATION, TEMPLATE)
+from configurator import (PATH_SECTION, FILENAME_SECTION, DEFAULT_SECTION,
+        DATE_FORMAT, EXTENSION, DESTINATION, TEMPLATE, 
+        HOLIDAY_FEATURE, HOLIDAY_TEMPLATE )
 
 
 # Default test data
@@ -118,12 +119,20 @@ class FixtureFiles:
             self.create_config_file(data=config_data)
 
     def create_configurations(self, date_format='%%Y-%%m-%%d', 
-            extension='.md', destination=None, template=None):
+            extension='.md', destination=None, template=None, 
+            holiday_on=None, holiday_path=None):
         '''Get configurations without reading config file'''
-        d = destination if destination is not None else TEST_DESTINATION_PATH
-        t = template    if template    is not None else TEST_TEMPLATE_PATH
+        # Integrate configurator.defaults here...
+        d  = destination if destination is not None else TEST_DESTINATION_PATH
+        t  = template    if template    is not None else TEST_TEMPLATE_PATH
+        h  = '1'         if holiday_on  is not None else '0'
+        ht = TEST_CONFIG_PATH if holiday_path       else ''
         configurator = Configurator()
         configurator.read_dict({
+
+                'STAFF_ONLY': {
+                                HOLIDAY_FEATURE: h
+                              },
 
             FILENAME_SECTION: {
                                 DATE_FORMAT: date_format,
@@ -133,6 +142,7 @@ class FixtureFiles:
             PATH_SECTION:     {
                                 TEMPLATE: t,
                                 DESTINATION: d,
+                                HOLIDAY_TEMPLATE: ht,
                               },
         })
         return configurator
@@ -171,7 +181,7 @@ class FixtureFiles:
         return self.files[TEST_DESTINATION_FILENAME]
     
     def _patch_date(self):
-        config = {'today.return_value': FAKE_DATE}
+        config = {'today.return_value': FAKE_DATE, 'weekday.return_value': 5}
         self.date_patcher = patch('oj.date', **config)
         self.mock_date = self.date_patcher.start()
 

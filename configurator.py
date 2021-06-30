@@ -9,9 +9,11 @@ APPLICATION_NAME = 'oj'
 PATH_SECTION     = 'PATH'
 DEFAULT_SECTION  = 'DEFAULT'
 FILENAME_SECTION = 'FILENAME'
+STAFF_ONLY       = 'STAFF_ONLY'
 
-DESTINATION, TEMPLATE  = 'destination', 'template'
+DESTINATION, TEMPLATE, HOLIDAY_TEMPLATE = 'destination', 'template', 'holiday'
 WAIT = 'wait'
+HOLIDAY_FEATURE = 'holiday_feature'
 DATE_FORMAT, EXTENSION = 'date_format', 'extension'
 CONFIG_DIRECTORY = 'config_directory'
 USE_EDITOR, USE_VISUAL = '1', '0'
@@ -24,9 +26,10 @@ USE_EDITOR, USE_VISUAL = '1', '0'
 #     * editor name = # will be used if EDITOR and VISUAL are false
 DEFAULTS = {
 
-         DEFAULT_SECTION: {
+              STAFF_ONLY: {
 
                            WAIT: '7',
+                HOLIDAY_FEATURE: '0',
 
         },
 
@@ -35,6 +38,7 @@ DEFAULTS = {
                     DESTINATION: '',
                        TEMPLATE: '',
                CONFIG_DIRECTORY: f'{Path().home().joinpath(".config")}',
+               HOLIDAY_TEMPLATE: ''
 
         },
 
@@ -134,7 +138,7 @@ class Configurator(ConfigParser):
             '''
             warnings.warn(UserWarning(message))
 
-            wait_time = self.getint('DEFAULT', 'wait')
+            wait_time = self.getint('STAFF_ONLY', 'wait')
             time.sleep(wait_time)
         return path
 

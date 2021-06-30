@@ -40,6 +40,7 @@ class Parser(argparse.ArgumentParser):
 
     def add_arguments(self):
         # TODO Plan:
+        #   * config  = create config file with defaults or open if exist
         #   * rewrite = delete old file 
         #   * append  = if file already exists (e.g. reminder) append to in
         #   * options = print all options and exit

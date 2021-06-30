@@ -51,6 +51,13 @@ class Application:
         if path.is_file():
             self.template = path.read_text()
 
+            holiday_on = self.configurator.get('STAFF_ONLY', 
+                    'holiday_feature') == '1' 
+            holiday_template = self.configurator.get_path('holiday')
+            today_is_holiday = date.today().weekday() in (5, 6)
+            if holiday_on and holiday_template.is_file() and today_is_holiday:
+                self.template += '\n' + holiday_template.read_text()
+
     def create_note(self):
         if self.get_mode() == REWRITE_MODE or not self.destination.exists():
             self.destination.write_text(self.template)
@@ -72,6 +79,5 @@ class Application:
 
 
 if __name__ == '__main__':
-    # TODO: default settings + argparse + alter template for holidays = v1.0.0
     # TODO REAMDE > usage without config with args
     Application().run()

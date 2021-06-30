@@ -30,7 +30,7 @@ class NoConfigTest(FunctionalTest):
         # 
         # He runs oj and sees message that default settings will be used
         # Oj gives John enough time to read this message before main run
-        default_wait_time = self.app.configurator.getint('DEFAULT', 'wait')
+        default_wait_time = self.app.configurator.getint('STAFF_ONLY', 'wait')
         self.assertGreaterEqual(default_wait_time, 5)
 
         # John does not want to run oj with default settings

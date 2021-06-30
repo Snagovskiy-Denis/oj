@@ -76,12 +76,12 @@ class NoConfigFileTestCase(ConfiguratorTestCase):
             self.configurator.read()
 
         mock_is_file.assert_called_once()
-        wait_time = int(DEFAULTS['DEFAULT']['wait'])
+        wait_time = int(DEFAULTS['STAFF_ONLY']['wait'])
         mock_sleep.assert_called_once_with(wait_time)
 
     def test_skip_warning_message_if_skip_parametr(self, _):
         try:
-            with patch('time.sleep'), self.assertWarns(UserWarning) as w:
+            with patch('time.sleep'), self.assertWarns(UserWarning):
                     self.configurator.read(skip=True)
         except AssertionError:
             pass  # should not raise
@@ -89,9 +89,10 @@ class NoConfigFileTestCase(ConfiguratorTestCase):
             self.fail('Warning message is not skipped')
 
     def test_use_PWD_directory_as_distanation_path(self, _):
-        self.config_path_patcher.start()
-        self.configurator.read()
-        self.assertEqual(Path().cwd(),self.configurator.get_path(DESTINATION))
+        with patch('time.sleep'), self.assertWarns(UserWarning):
+            self.configurator.read()
+        self.assertEqual(Path().cwd(),
+                         self.configurator.get_path(DESTINATION))
 
     def test_additional_options_overwrite_default_ones(self, _):
         additional_options = {'date_format': '%%d/%%m/%%Y', 'extension': ''}

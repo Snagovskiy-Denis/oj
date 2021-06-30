@@ -1,5 +1,6 @@
-from unittest import main
-from unittest.mock import patch
+from datetime import date
+from unittest import main, skip
+from unittest.mock import patch, MagicMock
 
 from .base import BaseApplicationTestCase, IntegratedApplicationTestCase
 from test.environment.fixture_files import TEST_DIRECTORY
@@ -103,6 +104,54 @@ class ApplicationOpenNoteTest(IntegratedApplicationTestCase):
         self.mock_chdir.assert_not_called()
         self.mock_getenv.assert_called_once_with(EDITOR)
         self.mock_subprocess_run.assert_not_called()
+
+
+# rewrite this file later with addition of extra-template file
+class HolidayFeature(IntegratedApplicationTestCase):
+    def test_expand_template_text_if_feature_is_on_and_today_is_a_holiday(
+                self
+            ):
+        self.mock_date.today.return_value = MagicMock(spec=date, 
+                **{'weekday.return_value': 5})  # today is a holiday
+        self.app.configurator = self.create_configurations(
+                holiday_on=True, holiday_path=True)
+
+        self.app.read_template_file()
+        self.assertIn('[PATH]', self.app.template)
+
+    def test_do_not_expand_template_if_feature_is_on_and_today_is_not_holiday(
+                self
+            ):
+        self.app.configurator = self.create_configurations(
+                holiday_on=True, holiday_path=True)
+        # extra template = config_file
+        self.delete_file(self.config_file)
+
+        self.app.read_template_file()
+        self.assertNotIn('[PATH]', self.app.template)
+
+    def test_do_not_expand_template_if_holiday_feature_is_off(self):
+        self.mock_date.today.return_value = MagicMock(spec=date, 
+                **{'weekday.return_value': 5})  # today is a holiday
+        self.app.configurator = self.create_configurations(
+                holiday_on=False)
+
+        self.app.read_template_file()
+
+        self.assertNotIn('[PATH]', self.app.template)
+
+    @patch('sys.argv', [__file__, '--skip'])
+    def test_do_not_expand_template_text_if_extra_path_do_not_exist(self):
+        self.mock_date.today.return_value = MagicMock(spec=date, 
+                **{'weekday.return_value': 5})  # today is a holiday
+        self.app.configurator = self.create_configurations(
+                holiday_on=True, holiday_path=True)
+        # extra template = config_file
+        self.delete_file(self.config_file)
+
+        self.app.read_template_file()
+
+        self.assertNotIn('[PATH]', self.app.template)
 
 
 if __name__ == '__main__':
