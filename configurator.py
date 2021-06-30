@@ -88,24 +88,30 @@ class Configurator(ConfigParser):
     def __init__(self, options = dict(), set_defaults = True):
         # ConfigParser __init__ defaults attr does not work so...
         super().__init__()
-        self._set_defaults()
-        # if set_defaults:
-        #     self._set_defaults()
-        # if options:
-        #     self.read_dict(options)
+        if set_defaults: self.read_dict(DEFAULTS)
+        # if options: self.read_dict(self.app.cli.option)
 
     def get_path(self, option: str, section=PATH_SECTION) -> Path:
         '''Get option as instance of Path class'''
         option = self.get(section, option)
-        return Path(option).absolute()
+        return Path(option).expanduser().absolute()
     
     def get_in_filename(self, option: str) -> str:
         '''Shortcut for getting option from filename section'''
         return self.get(FILENAME_SECTION, option)
 
-    def read(self, skip=False) -> dict():
+    def read(self, cli_options=None, skip=False) -> dict():
         super().read(self._get_config_path(skip))
+        if cli_options is not None:
+            self.read_additional_options(cli_options)
         return self
+
+    def read_additional_options(self, cli_options: dict):
+        'Find section which given option belongs to and overwrite its value'
+        for section in self.sections():
+            for key, value in cli_options.items():
+                if key in self[section].keys():
+                    self[section][key] = value
 
     def _get_config_path(self, skip=False):
         '''Validate config file path'''
@@ -134,6 +140,3 @@ class Configurator(ConfigParser):
 
     def __str__(self):
         return str(self._sections)
-    
-    def _set_defaults(self):
-        self.read_dict(DEFAULTS)

@@ -28,23 +28,14 @@ class Application:
         self.mode = DEFAULT_MODE
 
     def get_mode(self) -> str:
-        # Plan:
-        #   * rewrite = delete old file 
-        #   * append  = if file already exists (e.g. reminder) append to in
-        #   * options = print all options and exit
-        #   * option  = set option for this run exclusively
-        #               e.g. 1 template path to run without config file at all
-        #               e.g. 2 config path instead of standart one
-        #   * date    = set today's date to given one
-        #               by default parsed in format of date_format option
-        #   * 
         return self.mode
 
     def parse_system_arguments(self):
         self.cli = self.cli.parse_args(sys.argv[1:])
 
     def read_config_file(self):
-        self.configurator.read(skip=self.cli.skip)
+        self.configurator.read(
+                cli_options=self.cli.option, skip=self.cli.skip)
 
     def build_filename(self):
         date_format = self.configurator.get_in_filename(DATE_FORMAT)

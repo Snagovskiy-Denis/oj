@@ -28,6 +28,12 @@ class ValidConfigFileTestCase(ConfiguratorTestCase):
         self.assertIsInstance(path, Path)
         self.assertEqual(path, self.destination_directory)
 
+    def test_expand_tilde_as_home_directory_in_path_section_options(self):
+        tilde_path = {DESTINATION: '~/test'}
+        settings = self.configurator.read(cli_options=tilde_path)
+        self.assertEqual(Path().home().joinpath('test'),
+                         settings.get_path(DESTINATION))
+
     def test_default_values_are_read_before_config_file(self):
         defaults = {'date_format': '%%Y-%%m-%%d', 'extension': '.txt',
                 'destination': '', 'template': ''}
@@ -36,6 +42,18 @@ class ValidConfigFileTestCase(ConfiguratorTestCase):
             mock_read.side_effect = self.assertIncludeSettings(
                     defaults, self.configurator)
             self.configurator.read()
+
+    def test_additional_options_used_instead_of_config_file_ones(self):
+        additional_options = {'date_format': '%%d/%%m/%%Y', 'extension': ''}
+        self.configurator.read(cli_options=additional_options)
+
+        self.assertEqual('%d/%m/%Y', 
+                self.configurator.get_in_filename('date_format'))
+        self.assertEqual('', self.configurator.get_in_filename('extension'))
+
+    @skip
+    def test_additional_options_are_read_last(self):
+        pass
 
 
 @patch('pathlib.Path.is_file', return_value=False)
@@ -61,7 +79,7 @@ class NoConfigFileTestCase(ConfiguratorTestCase):
         wait_time = int(DEFAULTS['DEFAULT']['wait'])
         mock_sleep.assert_called_once_with(wait_time)
 
-    def test_skip_warning_message_if_skip_parametr(self, mock_is_file):
+    def test_skip_warning_message_if_skip_parametr(self, _):
         try:
             with patch('time.sleep'), self.assertWarns(UserWarning) as w:
                     self.configurator.read(skip=True)
@@ -70,10 +88,23 @@ class NoConfigFileTestCase(ConfiguratorTestCase):
         else:
             self.fail('Warning message is not skipped')
 
-    def test_use_PWD_directory_as_distanation_path(self, mock_is_file):
+    def test_use_PWD_directory_as_distanation_path(self, _):
         self.config_path_patcher.start()
         self.configurator.read()
         self.assertEqual(Path().cwd(),self.configurator.get_path(DESTINATION))
+
+    def test_additional_options_overwrite_default_ones(self, _):
+        additional_options = {'date_format': '%%d/%%m/%%Y', 'extension': ''}
+        defaults = {'date_format': '%%Y-%%m-%%d', 'extension': '.txt',
+                'destination': '', 'template': ''}
+
+        with patch('time.sleep'), self.assertWarns(UserWarning):
+            self.configurator.read(cli_options=additional_options)
+
+        self.assertEqual('%d/%m/%Y',
+                self.configurator.get_in_filename('date_format'))
+        self.assertEqual('',
+                self.configurator.get_in_filename('extension'))
 
 
 if __name__ == '__main__':
