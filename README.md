@@ -1,5 +1,5 @@
 # whatis oj
-Daily note manager for Console Dwellers
+Daily note manager for Terminal Dwellers
 
 ## What does it do specifically
 1. On run:
