@@ -46,12 +46,16 @@ class Parser(argparse.ArgumentParser):
         #   * options = print all options and exit
         #   * date    = set today's date to given one
         #               by default parsed in format of date_format option
-        self.add_argument('--skip', action='store_true',
+        self.add_argument('--skip', 
+                action='store_true',
                 help='skip default options warning message')
 
         self.add_argument('-o', '--option', 
-                metavar='OPTION=VALUE',
-                action=ParseDict, nargs='+', 
+                metavar='OPTION=VALUE', action=ParseDict, nargs='+', 
                 help='Overwrite OPTION value to VALUE for this run. '
                 'Multiple option-value pairs might be passed. '
                 'Use space as separator beetween option-value pais. ')
+        
+        self.add_argument('-c', '--config',
+                action='store_true',
+                help='open config file or create one if it does not exist yet')

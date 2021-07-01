@@ -1,10 +1,12 @@
 from datetime import date
 from unittest import main, skip
 from unittest.mock import patch, MagicMock
+import io
 
 from .base import BaseApplicationTestCase, IntegratedApplicationTestCase
 from test.environment.fixture_files import TEST_DIRECTORY
 
+from configurator import Configurator, CONFIG_DIRECTORY
 from oj import DEFAULT_MODE, REWRITE_MODE, EDITOR
 
 
@@ -53,14 +55,14 @@ class ApplicationWriteNewNoteTest(BaseApplicationTestCase):
         self.app.template = template
         self.app.destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
 
-        self.app.create_note()
+        self.app.create_file_on_destination()
 
         mock_write_text.assert_called_once_with(template)
 
     def test_do_not_write_if_destination_path_exists(self, mock_write_text):
         self.app.destination = TEST_DIRECTORY
 
-        self.app.create_note()
+        self.app.create_file_on_destination()
 
         self.assertEqual(self.app.get_mode(), DEFAULT_MODE)
         mock_write_text.assert_not_called()
@@ -69,7 +71,7 @@ class ApplicationWriteNewNoteTest(BaseApplicationTestCase):
                 self, mock_write_text
             ):
         self.app.destination = TEST_DIRECTORY.joinpath('I_AM_A_LIE.py')
-        self.app.create_note()
+        self.app.create_file_on_destination()
         mock_write_text.assert_called_once()
 
 
@@ -81,7 +83,7 @@ class ApplicationWriteNewNoteTest(BaseApplicationTestCase):
         self.app.destination = TEST_DIRECTORY
         self.app.template = template
 
-        self.app.create_note()
+        self.app.create_file_on_destination()
 
         mock_write_text.assert_called_once_with(template)
 
@@ -91,7 +93,7 @@ class ApplicationOpenNoteTest(IntegratedApplicationTestCase):
         destination = TEST_DIRECTORY.joinpath('2012-12-21.md')
         self.app.destination = destination
 
-        self.app.open_note()
+        self.app.open_destination()
 
         self.assertFileWasOpened(destination)
 
@@ -99,7 +101,7 @@ class ApplicationOpenNoteTest(IntegratedApplicationTestCase):
         self.mock_getenv.return_value = None
 
         with self.assertRaises(AttributeError):
-            self.app.open_note()
+            self.app.open_destination()
 
         self.mock_chdir.assert_not_called()
         self.mock_getenv.assert_called_once_with(EDITOR)
@@ -152,6 +154,78 @@ class HolidayFeature(IntegratedApplicationTestCase):
         self.app.read_template_file()
 
         self.assertNotIn('[PATH]', self.app.template)
+
+
+class ConfigSystemArgumentTestCase(IntegratedApplicationTestCase):
+    '''oj < echo y > /dev/null
+
+    Beware! Eats all input and output (including pbd)!
+    '''
+    def setUp(self):
+        super().setUp()
+        self.config_path_patcher.stop()
+        self.app.configurator = Configurator(set_defaults=True)
+
+        config_directory = self.app.configurator.get_path(CONFIG_DIRECTORY)
+        self.config_file_path = config_directory.joinpath('oj.ini')
+
+        self.config_read_patch = patch('configparser.ConfigParser.read')
+        self.stdout_patch = patch('sys.stdout', new_callable=io.StringIO)
+        self.user_input_patch = patch('builtins.input', return_value='y')
+        self.is_file_patch = patch('oj.Path.is_file', return_value=False)
+
+        self.mock_config_read = self.config_read_patch.start()
+        self.mock_stdout = self.stdout_patch.start()
+        self.mock_user_input = self.user_input_patch.start()
+        self.mock_is_file = self.is_file_patch.start()
+    
+    def tearDown(self):
+        self.config_read_patch.stop()
+        self.stdout_patch.stop()
+        self.user_input_patch.stop()
+        self.is_file_patch.stop()
+        super().tearDown()
+
+
+class ConfigIfFIleExist(ConfigSystemArgumentTestCase):
+    def test_opens_config_file_if_it_exists(self):
+        self.mock_is_file.return_value = True
+
+        self.app.config_run()
+
+        self.mock_write_text.assert_not_called()
+        self.assertFileWasOpened(self.config_file_path)
+    
+
+class ConfigIfFIleDoesNotExist(ConfigSystemArgumentTestCase):
+    def test_input_function_called_if_config_file_does_not_exist(self):
+        self.app.config_run()
+        self.assertIn('/.config/oj.ini', self.mock_stdout.getvalue())
+        self.mock_user_input.assert_called_once()
+
+    def test_exit_if_n_user_input(self):
+        self.mock_user_input.return_value = 'n'
+
+        self.app.config_run()
+
+        self.mock_write_text.assert_not_called()
+        self.mock_chdir.assert_not_called()
+        self.mock_subprocess_run.assert_not_called()
+
+    def test_repeat_user_input_if_it_is_not_y_or_n(self):
+        self.mock_user_input.side_effect = 'howdy', 'anyone?', 'n'
+
+        self.app.config_run()
+
+        self.assertEqual(len(self.mock_user_input.mock_calls), 3)
+
+    def test_create_config_file_if_it_does_not_exist_and_y_user_input(self):
+        default_config_text = Configurator().get_default_config()
+        with patch('pathlib.Path.exists', return_value=False):
+            self.app.config_run()
+
+        self.mock_write_text.assert_called_once_with(default_config_text)
+        self.assertFileWasOpened(self.config_file_path)
 
 
 if __name__ == '__main__':

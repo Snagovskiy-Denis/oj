@@ -47,7 +47,7 @@ class SelfCleaningTestFile:
         self._write_file()
 
     def _write_file(self, rewrite: bool = False):
-        if rewrite or not self._path.is_file():
+        if rewrite or not self._path.exists():
             # Path.write_text might be patched so could not be used
             with open(self._path, 'w') as f:  
                 f.write(self._data)
@@ -68,8 +68,8 @@ class SelfCleaningTestFile:
         return f'{self.path.name=}'
 
     def __del__(self):
-        if self._path.is_file():
-            self._path.unlink()
+        try: self._path.unlink()
+        except: pass
 
 
 class PlainTextTestFile(SelfCleaningTestFile):
@@ -83,7 +83,7 @@ class ConfigTestFile(SelfCleaningTestFile):
         super().__init__(file_name, data)
 
     def _write_file(self, rewrite: bool = False):
-        if rewrite or not self._path.is_file():
+        if rewrite or not self._path.exists():
             with open(self._path, 'w') as f:
                 self._data.write(f)
 
@@ -125,7 +125,7 @@ class FixtureFiles:
         # Integrate configurator.defaults here...
         d  = destination if destination is not None else TEST_DESTINATION_PATH
         t  = template    if template    is not None else TEST_TEMPLATE_PATH
-        h  = '1'         if holiday_on  is not None else '0'
+        h  = '1'         if holiday_on  is     True else '0'
         ht = TEST_CONFIG_PATH if holiday_path       else ''
         configurator = Configurator()
         configurator.read_dict({

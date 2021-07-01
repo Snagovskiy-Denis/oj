@@ -1,4 +1,4 @@
-from configparser import ConfigParser, NoSectionError
+from configparser import ConfigParser
 from pathlib import Path
 import time
 import warnings
@@ -68,7 +68,8 @@ class Configurator(ConfigParser):
                      template -- use this file text data as base to new note
 
              config_directory -- search oj.ini file in this directory
-                                 for (future) option-overwrite on run feature
+                                 for --option system argument usage
+                                 should not be placed in oj.ini file itself
 
         FILENAME:
 
@@ -90,10 +91,8 @@ class Configurator(ConfigParser):
         extension   = .md
     '''
     def __init__(self, options = dict(), set_defaults = True):
-        # ConfigParser __init__ defaults attr does not work so...
         super().__init__()
         if set_defaults: self.read_dict(DEFAULTS)
-        # if options: self.read_dict(self.app.cli.option)
 
     def get_path(self, option: str, section=PATH_SECTION) -> Path:
         '''Get option as instance of Path class'''
@@ -141,6 +140,33 @@ class Configurator(ConfigParser):
             wait_time = self.getint('STAFF_ONLY', 'wait')
             time.sleep(wait_time)
         return path
+    
+    def get_default_config(self):
+        '''Default config file writable body'''
+        return '\n'.join(
+         (f'[{PATH_SECTION}]',
+           '# Tilde symbol (~) in path section will be expanded to user home',
+           '#',
+           '# Destination is the directory where notes will be located',
+           '# e.g. destination = ~/notes',
+           "destination = ''",
+           '',
+           '# Point on template file',
+           '# New note will be copy of templates file',
+           '# e.g. template = ~/notes/new_note_template.md',
+           "template = ''",
+           '',
+          f'[{FILENAME_SECTION}]',
+           '# Date format is used to format notes name. ISO 8601 is default.',
+           '# Could include any symbols but % starts python datetime format',
+           '# Double % (%%) is used to escape single % in .ini files',
+           '# All valid formats: https://docs.python.org/library/datetime',
+           'date_format = %%Y-%%m-%%d',
+           '',
+           "# 'Extension' is part of the notes name after date_format",
+           'extension = .txt',
+         )
+       )
 
     def __str__(self):
         return str(self._sections)
