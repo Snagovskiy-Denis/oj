@@ -12,21 +12,40 @@ Daily note manager for Console Dwellers
 - opens note (only)
 
 # Usage
-1. Create config file — `$ touch $HOME/.config/oj.ini` 
-2. Edit config file with your data, e.g.:
-```ini
-[PATH]
-# directory where notes will be located
-destination = /home/johndoe/notes
-# this files text data is used as base to new note
-template    = /home/johndoe/notes/daily_note_template.md
+## Basic
+Run script with defaults with --skip option
+- source : `$ ./oj.py --skip`
+- release: `$ oj --skip`
 
-[FILENAME]
-# ISO 8601 format
-# double % escapes single %
-date_format = %%Y-%%m-%%d
-extension   = .md
-```
-3. Run script 
-- source : `$ ./oj.py`
-- release: `$ oj`
+This will create an empty file in current directory by default.
+
+## Advance
+You can change default behaviour on fly with --option
+- source : `$ ./oj.py --skip --option destination=~/stuff/notes template=~/stuff/new_note.txt date_format=%%d.%%m.%%Y`
+- release: `$ oj --skip --option destination=~/stuff/notes template=~/stuff/new_note.txt date_format=%%d.%%m.%%Y`
+
+This will create new file:
+- In HOME/stuff/notes directory
+- With copy of text of HOME/stuff/new_note.txt
+- And with filename like this: 31.12.2000.txt
+
+## With config file
+Run script with --config option
+- source : `$ ./oj.py --config`
+- release: `$ oj --config`
+
+This will create file on path HOME/.config/oj.ini with valid settings and useful comments.
+
+You could re-run this command to quickly re-open already existing config file.
+
+
+It is also possible to read existing config file on another path with this option:
+
+`--option config_directory=/another/directory/with/oj.ini/file`
+
+# Future of project
+I created oj basically for myself. 
+
+I will add new features if I feel like I need them. I am happy by this so far.
+
+However I am open for requests and pull requests.
