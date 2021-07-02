@@ -2,6 +2,8 @@
 Daily note manager for Terminal Dwellers
 
 ## What does it do specifically
+![copy](https://user-images.githubusercontent.com/55730392/124305415-c05a6580-db6d-11eb-8b1b-df6db6a4ca4f.gif)
+
 1. On run:
 - creates new file (note) in given directory
 - notes name is todays date in given format
